@@ -1,13 +1,15 @@
 import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/colors.dart';
+import 'package:TreatBees/utils/selections.dart';
 import 'package:flutter/material.dart';
 
-class TopButton extends StatelessWidget {
-  const TopButton(
+Selections selections = new Selections();
+
+class CarousTile extends StatelessWidget {
+  const CarousTile(
       {Key key,
       @required this.size,
       @required this.url,
-      @required this.icon,
       @required this.title,
       @required this.subTitle})
       : super(key: key);
@@ -16,7 +18,6 @@ class TopButton extends StatelessWidget {
   final String url;
   final String title;
   final String subTitle;
-  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +35,12 @@ class TopButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                    color: Color.fromRGBO(218, 225, 233, 1),
+                    color: MyColors().shadowDark,
                     offset: Offset(4.0, 4.0),
                     blurRadius: 15,
                     spreadRadius: 1),
                 BoxShadow(
-                    color: Color.fromRGBO(243, 250, 255, 1),
+                    color: MyColors().shadowLight,
                     offset: Offset(-4.0, -4.0),
                     blurRadius: 15,
                     spreadRadius: 1)
@@ -54,21 +55,6 @@ class TopButton extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color.fromRGBO(218, 225, 233, 1),
-                              MyColors().alice,
-                            ])),
-                    child: Icon(icon),
-                  ),
                   SizedBox(width: 10),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -129,12 +115,12 @@ class Cafetile extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                  color: Color.fromRGBO(218, 225, 233, 1),
+                  color: MyColors().shadowDark,
                   offset: Offset(4.0, 4.0),
                   blurRadius: 15,
                   spreadRadius: 1),
               BoxShadow(
-                  color: Color.fromRGBO(243, 250, 255, 1),
+                  color: MyColors().shadowLight,
                   offset: Offset(-4.0, -4.0),
                   blurRadius: 15,
                   spreadRadius: 1)
@@ -143,7 +129,7 @@ class Cafetile extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color.fromRGBO(218, 225, 233, 1),
+                  MyColors().shadowDark,
                   MyColors().alice,
                 ])),
         child: Icon(icon),
@@ -162,7 +148,7 @@ class Cafetile extends StatelessWidget {
           shape: StadiumBorder(),
           fillColor: Colors.orangeAccent,
           onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (context) => Menu(
                       cafeName: title,
                     )));
@@ -171,7 +157,7 @@ class Cafetile extends StatelessWidget {
   }
 }
 
-class Menutile extends StatelessWidget {
+class Menutile extends StatefulWidget {
   const Menutile(
       {Key key,
       @required this.icon,
@@ -184,8 +170,192 @@ class Menutile extends StatelessWidget {
   final String price;
 
   @override
+  _MenutileState createState() => _MenutileState();
+}
+
+class _MenutileState extends State<Menutile> {
+  List<Color> grad;
+  bool enab;
+  Widget trail;
+  int no;
+
+  @override
+  void initState() {
+    enab = false;
+    grad = [
+      MyColors().shadowDark,
+      MyColors().alice,
+    ];
+    no = 0;
+    trail = Container(width: 0, height: 0);
+    super.initState();
+  }
+
+  void inc() {
+    setState(() {
+      if (no == 0) {
+        tapLogic();
+      } else {
+        no += 1;
+        selections.update(no, widget.title);
+      }
+    });
+  }
+
+  void dec() {
+    setState(() {
+      if (no > 0) {
+        no -= 1;
+      }
+      if (no == 0) {
+        tapLogic();
+      }
+    });
+  }
+
+  void tapLogic() {
+    setState(() {
+      if (!enab) {
+        grad = [Colors.lightGreen[200], Colors.lightGreen[400]];
+        enab = true;
+        no = 1;
+        selections.pushItem(widget.title, int.parse(widget.price));
+      } else {
+        grad = [
+          MyColors().shadowDark,
+          MyColors().alice,
+        ];
+        no = 0;
+        enab = false;
+        trail = Container(
+          width: 0,
+          height: 0,
+        );
+        selections.popItem(widget.title, int.parse(widget.price));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      onPressed: tapLogic,
+      splashColor: MyColors().alice,
+      child: Container(
+        height: 85,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 18.0),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                              color: MyColors().shadowDark,
+                              offset: Offset(4.0, 4.0),
+                              blurRadius: 15,
+                              spreadRadius: 1),
+                          BoxShadow(
+                              color: MyColors().shadowLight,
+                              offset: Offset(-4.0, -4.0),
+                              blurRadius: 15,
+                              spreadRadius: 1)
+                        ],
+                        gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: grad)),
+                    child: Icon(widget.icon),
+                  ),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.none),
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Text(widget.price)
+                  ],
+                ),
+              ],
+            ),
+            Container(
+                child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RawMaterialButton(
+                  constraints: BoxConstraints(minWidth: 20),
+                  onPressed: inc,
+                  child: CircleAvatar(
+                    radius: 10,
+                    child: Icon(
+                      Icons.add,
+                      size: 15,
+                    ),
+                  ),
+                ),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: MyColors().alice,
+                  child: Text(
+                    '$no',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                RawMaterialButton(
+                  constraints: BoxConstraints(minWidth: 20),
+                  onPressed: dec,
+                  child: CircleAvatar(
+                    radius: 10,
+                    child: Icon(
+                      Icons.remove,
+                      size: 15,
+                    ),
+                  ),
+                ),
+              ],
+            ))
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class OptionTile extends StatelessWidget {
+  const OptionTile(
+      {Key key,
+      @required this.icon,
+      @required this.title,
+      @required this.subTitle})
+      : super(key: key);
+
+  final IconData icon;
+  final String title;
+  final String subTitle;
+
+  @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () {},
       leading: Container(
         width: 50,
         height: 50,
@@ -194,12 +364,12 @@ class Menutile extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                  color: Color.fromRGBO(218, 225, 233, 1),
+                  color: MyColors().shadowDark,
                   offset: Offset(4.0, 4.0),
                   blurRadius: 15,
                   spreadRadius: 1),
               BoxShadow(
-                  color: Color.fromRGBO(243, 250, 255, 1),
+                  color: MyColors().shadowLight,
                   offset: Offset(-4.0, -4.0),
                   blurRadius: 15,
                   spreadRadius: 1)
@@ -208,20 +378,15 @@ class Menutile extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color.fromRGBO(218, 225, 233, 1),
+                  MyColors().shadowDark,
                   MyColors().alice,
                 ])),
         child: Icon(icon),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-            fontSize: 18,
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.none),
-      ),
-      subtitle: Text(price),
+      title: Text(title,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      subtitle: Text(subTitle,
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
     );
   }
 }

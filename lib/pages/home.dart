@@ -17,19 +17,17 @@ class _HomeState extends State<Home> {
     Size size = MediaQuery.of(context).size;
 
     List cards = [
-      TopButton(
+      CarousTile(
         size: size,
         url:
             'https://images.unsplash.com/photo-1496412705862-e0088f16f791?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1650&q=80',
-        icon: Icons.emoji_food_beverage_rounded,
         title: "Pre Order Now!",
         subTitle: "Order now and eat later",
       ),
-      TopButton(
+      CarousTile(
         size: size,
         url:
             'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60',
-        icon: Icons.house_outlined,
         title: "Hello",
         subTitle: "Welcome to TreatBees",
       )
@@ -40,27 +38,65 @@ class _HomeState extends State<Home> {
           child: Container(
             color: MyColors().alice,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  height: 200,
-                  width: size.width,
-                  alignment: Alignment.center,
-                  child: Text("Menu"),
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: NetworkImage(
-                              'https://images.unsplash.com/photo-1484300681262-5cca666b0954?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'))),
+                Column(
+                  children: [
+                    Container(
+                      height: 200,
+                      width: size.width * 0.9,
+                      alignment: Alignment.center,
+                      child: Container(
+                        height: 200,
+                        width: size.width * 0.9,
+                        alignment: Alignment.centerLeft,
+                        child: ListTile(
+                          title: Text(
+                            "Julia Nolk",
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            "juila.nolk@gmail.com",
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          leading: CircleAvatar(
+                            radius: 25,
+                            backgroundImage: NetworkImage(
+                                'https://images.unsplash.com/photo-1573275048283-c4945bdedbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'),
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                              Colors.grey[850].withOpacity(0.6),
+                              Colors.black.withOpacity(0.8)
+                            ])),
+                      ),
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: NetworkImage(
+                                  'https://images.unsplash.com/photo-1484300681262-5cca666b0954?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'))),
+                    ),
+                    SizedBox(height: 20),
+                    OptionTile(
+                      icon: Icons.history,
+                      title: "Orders",
+                      subTitle: "View recent orders",
+                    ),
+                    OptionTile(
+                      icon: Icons.confirmation_num_rounded,
+                      title: "Collect Order",
+                      subTitle: "Collect your Active Order",
+                    ),
+                  ],
                 ),
-                SizedBox(height: 20),
-                Menutile(
-                    icon: Icons.history,
-                    title: "My Order",
-                    price: "View recent orders"),
-                Menutile(
-                    icon: Icons.info_outlined,
-                    title: "Version 1 MVP",
-                    price: "Information about us")
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("version 1.0 MVP"),
+                )
               ],
             ),
           ),
@@ -147,6 +183,36 @@ class _HomeState extends State<Home> {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w600),
                       ),
+                    ),
+                    Cafetile(
+                      icon: Icons.local_cafe_outlined,
+                      title: "Cafe Coffee Day",
+                      subtitle: "Visit for offers",
+                    ),
+                    Cafetile(
+                      icon: Icons.fastfood,
+                      title: "KFC",
+                      subtitle: "Visit for offers",
+                    ),
+                    Cafetile(
+                      icon: Icons.food_bank_outlined,
+                      title: "Canteen",
+                      subtitle: "Visit for offers",
+                    ),
+                    Cafetile(
+                      icon: Icons.local_cafe_outlined,
+                      title: "Cafe Coffee Day",
+                      subtitle: "Visit for offers",
+                    ),
+                    Cafetile(
+                      icon: Icons.fastfood,
+                      title: "KFC",
+                      subtitle: "Visit for offers",
+                    ),
+                    Cafetile(
+                      icon: Icons.food_bank_outlined,
+                      title: "Canteen",
+                      subtitle: "Visit for offers",
                     ),
                     Cafetile(
                       icon: Icons.local_cafe_outlined,

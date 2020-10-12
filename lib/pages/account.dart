@@ -79,12 +79,12 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                           borderRadius: BorderRadius.all(Radius.circular(30)),
                           boxShadow: [
                             BoxShadow(
-                                color: Color.fromRGBO(218, 225, 233, 1),
+                                color: MyColors().shadowDark,
                                 offset: Offset(4.0, 4.0),
                                 blurRadius: 15,
                                 spreadRadius: 1),
                             BoxShadow(
-                                color: Color.fromRGBO(243, 250, 255, 1),
+                                color: MyColors().shadowLight,
                                 offset: Offset(-4.0, -4.0),
                                 blurRadius: 15,
                                 spreadRadius: 1)
@@ -93,7 +93,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                Color.fromRGBO(218, 225, 233, 1),
+                                MyColors().shadowDark,
                                 MyColors().alice,
                               ])),
                       child: RawMaterialButton(

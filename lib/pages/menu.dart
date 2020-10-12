@@ -1,3 +1,4 @@
+import 'package:TreatBees/pages/orderDetails.dart';
 import 'package:TreatBees/utils/colors.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class _MenuState extends State<Menu> {
       appBar: AppBar(
         backgroundColor: MyColors().alice,
         elevation: 0.0,
-        titleSpacing: 0.0,
+        titleSpacing: 20.0,
         title: Hero(
           tag: "Title",
           child: RichText(
@@ -74,56 +75,98 @@ class _MenuState extends State<Menu> {
                     decoration: TextDecoration.none),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(left: 20, bottom: 10, top: 20),
-              child: Text(
-                "Refreshing Tea",
-                style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    decoration: TextDecoration.none),
-              ),
-            ),
+            MenuSectionHeading(title: "Refreshing Tea"),
             Menutile(
               icon: Icons.emoji_food_beverage,
               title: "Asam Tea",
-              price: "120 /-",
+              price: "120",
             ),
             Menutile(
                 icon: Icons.emoji_food_beverage,
                 title: "Masala Chai",
-                price: "120 /-"),
+                price: "120"),
             Menutile(
                 icon: Icons.emoji_food_beverage,
                 title: "Darjeeling Tea",
-                price: "126 /-"),
-            Padding(
-              padding: EdgeInsets.only(left: 20, bottom: 10, top: 20),
-              child: Text(
-                "Cold Coffee Delights",
-                style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    decoration: TextDecoration.none),
-              ),
+                price: "126"),
+            MenuSectionHeading(
+              title: "Cold Coffee Delights",
             ),
             Menutile(
               icon: Icons.emoji_food_beverage,
               title: "Devils own vanila cream",
-              price: "266 /-",
+              price: "266",
             ),
             Menutile(
                 icon: Icons.emoji_food_beverage,
                 title: "Devil’s Own Cocoa Cream",
-                price: "212 /-"),
+                price: "212"),
             Menutile(
                 icon: Icons.emoji_food_beverage,
                 title: "Dark Frappe",
-                price: "226 /-"),
+                price: "226"),
+            MenuSectionHeading(title: "Refreshing Tea"),
+            Menutile(
+              icon: Icons.emoji_food_beverage,
+              title: "Asam Tea",
+              price: "120",
+            ),
+            Menutile(
+                icon: Icons.emoji_food_beverage,
+                title: "Masala Chai",
+                price: "120"),
+            Menutile(
+                icon: Icons.emoji_food_beverage,
+                title: "Darjeeling Tea",
+                price: "126"),
+            MenuSectionHeading(
+              title: "Cold Coffee Delights",
+            ),
+            Menutile(
+              icon: Icons.emoji_food_beverage,
+              title: "Devils own vanila cream",
+              price: "266",
+            ),
+            Menutile(
+                icon: Icons.emoji_food_beverage,
+                title: "Devil’s Own Cocoa Cream",
+                price: "212"),
+            Menutile(
+                icon: Icons.emoji_food_beverage,
+                title: "Dark Frappe",
+                price: "226"),
           ],
         ),
+      ),
+      floatingActionButton: RawMaterialButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => Ord(selection: selections)));
+        },
+        shape: StadiumBorder(),
+        fillColor: Colors.orange,
+        child: Text("Order now"),
+      ),
+    );
+  }
+}
+
+class MenuSectionHeading extends StatelessWidget {
+  const MenuSectionHeading({Key key, @required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(left: 20, bottom: 10, top: 20),
+      child: Text(
+        title,
+        style: TextStyle(
+            fontSize: 15,
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.none),
       ),
     );
   }

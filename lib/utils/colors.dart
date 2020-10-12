@@ -7,6 +7,8 @@ import 'package:flutter/painting.dart';
 class MyColors {
   Color primary = Colors.orangeAccent;
   Color alice = Color.fromRGBO(247, 252, 255, 1);
+  Color shadowLight = Color.fromRGBO(243, 250, 255, 1);
+  Color shadowDark = Color.fromRGBO(218, 225, 233, 1);
 }
 
 class MyFonts {
