@@ -1,6 +1,8 @@
-import 'package:flutter/foundation.dart';
-
 class Selections {
+  // This is the View Class out of MVC...
+  // This contains all the getter and setter methods for all the variables..
+  // Null within an object is allowed//
+
   List<String> selectedName = [];
   List<int> selectedPrice = [];
   List<int> numVal = [];
@@ -18,24 +20,17 @@ class Selections {
     selectedName.add(key);
     selectedPrice.add(price);
     numVal.add(1);
-    print(selectedName);
-    print(selectedPrice);
   }
 
-  bool popItem(String key, int price) {
+  void popItem(String key, int price) {
     selectedPrice.removeAt(selectedName.indexOf(key));
-    numVal.remove(selectedName.indexOf(key));
+    numVal.removeAt(selectedName.indexOf(key));
     selectedName.remove(key);
-    print(selectedName);
-    print(selectedPrice);
   }
 
   void update(int no, String key) {
     selectedPrice[selectedName.indexOf(key)] +=
         selectedPrice[selectedName.indexOf(key)];
     numVal[selectedName.indexOf(key)] = no;
-    print(selectedName);
-    print(selectedPrice);
-    print(numVal);
   }
 }

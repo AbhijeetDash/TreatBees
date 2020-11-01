@@ -4,9 +4,9 @@ import 'package:TreatBees/utils/widget.dart';
 import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
-  String cafeName;
+  final String cafeName;
 
-  Menu({this.cafeName});
+  Menu({@required this.cafeName});
 
   @override
   _MenuState createState() => _MenuState();
@@ -15,47 +15,13 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: MyColors().alice,
         elevation: 0.0,
         titleSpacing: 20.0,
-        title: Hero(
-          tag: "Title",
-          child: RichText(
-            text: TextSpan(children: [
-              TextSpan(text: 'Treat', style: MyFonts().smallHeadingBold),
-              TextSpan(text: 'Bees', style: MyFonts().smallHeadingLight)
-            ]),
-          ),
-        ),
-        actions: [
-          Hero(
-            tag: "UserFace",
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RichText(
-                  text: TextSpan(children: [
-                    TextSpan(
-                        text: 'Welcome ',
-                        style: TextStyle(fontSize: 14, color: Colors.black)),
-                    TextSpan(
-                        text: 'Julia  ', style: MyFonts().smallHeadingLight)
-                  ]),
-                ),
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(
-                      'https://images.unsplash.com/photo-1573275048283-c4945bdedbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'),
-                ),
-                SizedBox(width: 10),
-              ],
-            ),
-          )
-        ],
+        title: Hero(tag: "Title", child: TitleWidget()),
+        actions: [UserAppBarTile()],
       ),
       body: Container(
         color: MyColors().alice,
@@ -146,27 +112,6 @@ class _MenuState extends State<Menu> {
         shape: StadiumBorder(),
         fillColor: Colors.orange,
         child: Text("Order now"),
-      ),
-    );
-  }
-}
-
-class MenuSectionHeading extends StatelessWidget {
-  const MenuSectionHeading({Key key, @required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 20, bottom: 10, top: 20),
-      child: Text(
-        title,
-        style: TextStyle(
-            fontSize: 15,
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.none),
       ),
     );
   }

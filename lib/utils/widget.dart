@@ -107,6 +107,12 @@ class Cafetile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: () {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => Menu(
+                  cafeName: title,
+                )));
+      },
       leading: Container(
         width: 50,
         height: 50,
@@ -143,16 +149,6 @@ class Cafetile extends StatelessWidget {
             decoration: TextDecoration.none),
       ),
       subtitle: Text("This is a good cafe"),
-      trailing: RawMaterialButton(
-          child: Text("Menu"),
-          shape: StadiumBorder(),
-          fillColor: Colors.orangeAccent,
-          onPressed: () {
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => Menu(
-                      cafeName: title,
-                    )));
-          }),
     );
   }
 }
@@ -387,6 +383,121 @@ class OptionTile extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       subtitle: Text(subTitle,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+    );
+  }
+}
+
+class TitleWidget extends StatelessWidget {
+  const TitleWidget({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(children: [
+        TextSpan(text: 'Treat', style: MyFonts().smallHeadingBold),
+        TextSpan(text: 'Bees', style: MyFonts().smallHeadingLight)
+      ]),
+    );
+  }
+}
+
+class MenuSectionHeading extends StatelessWidget {
+  const MenuSectionHeading({Key key, @required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(left: 20, bottom: 10, top: 20),
+      child: Text(
+        title,
+        style: TextStyle(
+            fontSize: 15,
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.none),
+      ),
+    );
+  }
+}
+
+class UserAppBarTile extends StatelessWidget {
+  /// This widget will take UserName and ProfilePic
+  /// link as argumants..
+  /// It must be created once and used by Its Object
+  /// passed to each node.
+
+  const UserAppBarTile({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        RichText(
+          text: TextSpan(children: [
+            TextSpan(
+                text: 'Welcome ',
+                style: TextStyle(fontSize: 14, color: Colors.black)),
+            TextSpan(text: 'Julia  ', style: MyFonts().smallHeadingLight)
+          ]),
+        ),
+        CircleAvatar(
+          radius: 20,
+          backgroundImage: NetworkImage(
+              'https://images.unsplash.com/photo-1573275048283-c4945bdedbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'),
+        ),
+        SizedBox(width: 10),
+      ],
+    );
+  }
+}
+
+class CustomFloatingActionButton extends StatelessWidget {
+  const CustomFloatingActionButton({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      backgroundColor: Colors.black.withOpacity(0.0),
+      radius: 30,
+      child: Container(
+        child: FloatingActionButton(
+            elevation: 0.0,
+            backgroundColor: Colors.black.withOpacity(0.0),
+            onPressed: () {},
+            child: Icon(Icons.group)),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                MyColors().shadowDark,
+                MyColors().alice,
+              ]),
+          boxShadow: [
+            BoxShadow(
+                color: MyColors().shadowDark,
+                offset: Offset(4.0, 4.0),
+                blurRadius: 15,
+                spreadRadius: 1),
+            BoxShadow(
+                color: MyColors().shadowLight,
+                offset: Offset(-4.0, -4.0),
+                blurRadius: 15,
+                spreadRadius: 1)
+          ],
+          borderRadius: BorderRadius.circular(30),
+        ),
+      ),
     );
   }
 }

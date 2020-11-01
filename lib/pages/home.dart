@@ -1,4 +1,3 @@
-import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/colors.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -10,7 +9,11 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _currentIndex = 0;
+  @override
+  void initState() {
+    // get carousels.. and create the cards array
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +94,11 @@ class _HomeState extends State<Home> {
                       title: "Collect Order",
                       subTitle: "Collect your Active Order",
                     ),
+                    OptionTile(
+                      icon: Icons.group,
+                      title: "Gangs",
+                      subTitle: "Order with your Gang",
+                    ),
                   ],
                 ),
                 Padding(
@@ -107,39 +115,9 @@ class _HomeState extends State<Home> {
           titleSpacing: 0.0,
           title: Hero(
             tag: "Title",
-            child: RichText(
-              text: TextSpan(children: [
-                TextSpan(text: 'Treat', style: MyFonts().smallHeadingBold),
-                TextSpan(text: 'Bees', style: MyFonts().smallHeadingLight)
-              ]),
-            ),
+            child: TitleWidget(),
           ),
-          actions: [
-            Hero(
-              tag: "UserFace",
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RichText(
-                    text: TextSpan(children: [
-                      TextSpan(
-                          text: 'Welcome ',
-                          style: TextStyle(fontSize: 14, color: Colors.black)),
-                      TextSpan(
-                          text: 'Julia  ', style: MyFonts().smallHeadingLight)
-                    ]),
-                  ),
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: NetworkImage(
-                        'https://images.unsplash.com/photo-1573275048283-c4945bdedbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'),
-                  ),
-                  SizedBox(width: 10),
-                ],
-              ),
-            )
-          ],
+          actions: [UserAppBarTile()],
         ),
         body: Container(
           alignment: Alignment.center,
@@ -157,11 +135,6 @@ class _HomeState extends State<Home> {
                   autoPlayCurve: Curves.fastOutSlowIn,
                   pauseAutoPlayOnTouch: Duration(seconds: 5),
                   aspectRatio: 2.0,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
                   items: cards.map((card) {
                     return Builder(builder: (BuildContext context) {
                       return Container(
@@ -174,6 +147,7 @@ class _HomeState extends State<Home> {
               ),
               Expanded(
                 flex: 4,
+                // this list view would be dynamic
                 child: ListView(
                   children: [
                     Padding(
@@ -234,6 +208,7 @@ class _HomeState extends State<Home> {
               ),
             ],
           ),
-        ));
+        ),
+        floatingActionButton: CustomFloatingActionButton());
   }
 }
