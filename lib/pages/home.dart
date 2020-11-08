@@ -1,4 +1,4 @@
-import 'package:TreatBees/utils/colors.dart';
+import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
