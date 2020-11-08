@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:TreatBees/pages/account.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Splash extends StatefulWidget {
   @override
@@ -13,9 +12,8 @@ class Splash extends StatefulWidget {
 class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   AnimationController fadeController;
   Animation anim;
-  SharedPreferences sp;
 
-  void toLogin() {
+  void driver() {
     Timer(Duration(milliseconds: 500), () {
       fadeController.forward().whenComplete(() => {
             Timer(Duration(milliseconds: 600), () {
@@ -27,15 +25,6 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
             })
           });
     });
-  }
-
-  Future<void> driver() async {
-    sp = await SharedPreferences.getInstance();
-    if (sp.getKeys().contains('done')) {
-      // Call google login and go to home
-    } else {
-      toLogin();
-    }
   }
 
   @override
