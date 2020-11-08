@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -12,19 +13,13 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   AnimationController fadeController;
   Animation anim;
-
-  void drive() {
-    Timer(Duration(milliseconds: 500), () {
-      fadeController.forward();
-    });
-  }
+  SharedPreferences sp;
+  Widget button = Container();
 
   @override
   void initState() {
-    fadeController = new AnimationController(
-        duration: Duration(milliseconds: 400), vsync: this);
-    anim = new Tween(begin: 0.0, end: 1.0).animate(fadeController);
     drive();
+    checkUser();
     super.initState();
   }
 
@@ -70,63 +65,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                 ),
                 FadeTransition(
                   opacity: anim,
-                  child: SizedBox(
-                    height: 60,
-                    width: 150,
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: MyColors().alice,
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          boxShadow: [
-                            BoxShadow(
-                                color: MyColors().shadowDark,
-                                offset: Offset(4.0, 4.0),
-                                blurRadius: 15,
-                                spreadRadius: 1),
-                            BoxShadow(
-                                color: MyColors().shadowLight,
-                                offset: Offset(-4.0, -4.0),
-                                blurRadius: 15,
-                                spreadRadius: 1)
-                          ],
-                          gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                MyColors().shadowDark,
-                                MyColors().alice,
-                              ])),
-                      child: RawMaterialButton(
-                          splashColor: Colors.white.withOpacity(0.6),
-                          shape: StadiumBorder(),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: AssetImage('assets/g.png'))),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 18.0),
-                                child: Text(
-                                  "Sign-in",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 18),
-                                ),
-                              ),
-                            ],
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) => Home()));
-                          }),
-                    ),
-                  ),
+                  child: button,
                 )
               ],
             ),
@@ -146,5 +85,94 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  void drive() {
+    fadeController = new AnimationController(
+        duration: Duration(milliseconds: 400), vsync: this);
+    anim = new Tween(begin: 0.0, end: 1.0).animate(fadeController);
+    Timer(Duration(milliseconds: 500), () {
+      fadeController.forward();
+    });
+  }
+
+  Future<void> checkUser() async {
+    sp = await SharedPreferences.getInstance();
+    if (sp.getBool('available') == null) {
+      setState(() {
+        button = SizedBox(
+          height: 60,
+          width: 150,
+          child: Container(
+            decoration: BoxDecoration(
+                color: MyColors().alice,
+                borderRadius: BorderRadius.all(Radius.circular(30)),
+                boxShadow: [
+                  BoxShadow(
+                      color: MyColors().shadowDark,
+                      offset: Offset(4.0, 4.0),
+                      blurRadius: 15,
+                      spreadRadius: 1),
+                  BoxShadow(
+                      color: MyColors().shadowLight,
+                      offset: Offset(-4.0, -4.0),
+                      blurRadius: 15,
+                      spreadRadius: 1)
+                ],
+                gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      MyColors().shadowDark,
+                      MyColors().alice,
+                    ])),
+            child: RawMaterialButton(
+                splashColor: Colors.white.withOpacity(0.6),
+                shape: StadiumBorder(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      height: 60,
+                      width: 60,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('assets/g.png'))),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 18.0),
+                      child: Text(
+                        "Sign-in",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 18),
+                      ),
+                    ),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => Home(sp: sp)));
+                }),
+          ),
+        );
+      });
+    } else {
+      setState(() {
+        button = Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(Colors.orange),
+            ),
+          ),
+        );
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => Home(sp: null)));
+        });
+      });
+    }
   }
 }
