@@ -69,7 +69,7 @@ class _OrdState extends State<Ord> {
             selection.selectedName = [];
             selection.selectedPrice = [];
             Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => Home()));
+                MaterialPageRoute(builder: (context) => Home(sp: null)));
           },
         ),
         title: Hero(tag: "Title", child: TitleWidget()),

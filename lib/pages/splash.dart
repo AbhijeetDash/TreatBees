@@ -13,28 +13,8 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   AnimationController fadeController;
   Animation anim;
 
-  void driver() {
-    Timer(Duration(milliseconds: 500), () {
-      fadeController.forward().whenComplete(() => {
-            Timer(Duration(milliseconds: 600), () {
-              Navigator.of(context).pushReplacement(PageRouteBuilder(
-                  pageBuilder: (a, b, c) {
-                    return Login();
-                  },
-                  transitionDuration: Duration(milliseconds: 400)));
-            })
-          });
-    });
-  }
-
   @override
   void initState() {
-    // Initialising Basic Animation Variables
-    fadeController = new AnimationController(
-        duration: Duration(milliseconds: 400), vsync: this);
-    anim = new Tween(begin: 0.0, end: 1.0).animate(fadeController);
-
-    //Calling the driver Function if Everyting is configured
     driver();
     super.initState();
   }
@@ -84,5 +64,22 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  void driver() {
+    fadeController = new AnimationController(
+        duration: Duration(milliseconds: 400), vsync: this);
+    anim = new Tween(begin: 0.0, end: 1.0).animate(fadeController);
+    Timer(Duration(milliseconds: 500), () {
+      fadeController.forward().whenComplete(() => {
+            Timer(Duration(milliseconds: 600), () {
+              Navigator.of(context).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (a, b, c) {
+                    return Login();
+                  },
+                  transitionDuration: Duration(milliseconds: 400)));
+            })
+          });
+    });
   }
 }

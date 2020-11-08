@@ -2,8 +2,11 @@ import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
+  final SharedPreferences sp;
+  Home({@required this.sp});
   @override
   _HomeState createState() => _HomeState();
 }
@@ -12,6 +15,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     // get carousels.. and create the cards array
+    if (widget.sp != null) widget.sp.setBool('available', true);
     super.initState();
   }
 
