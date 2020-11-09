@@ -1,6 +1,7 @@
 import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 Selections selections = new Selections();
@@ -97,12 +98,14 @@ class Cafetile extends StatelessWidget {
       {Key key,
       @required this.icon,
       @required this.title,
-      @required this.subtitle})
+      @required this.subtitle,
+      @required this.user})
       : super(key: key);
 
   final IconData icon;
   final String title;
   final String subtitle;
+  final User user;
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +114,7 @@ class Cafetile extends StatelessWidget {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => Menu(
                   cafeName: title,
+                  user: user,
                 )));
       },
       leading: Container(
@@ -425,14 +429,14 @@ class MenuSectionHeading extends StatelessWidget {
 }
 
 class UserAppBarTile extends StatelessWidget {
+  final User user;
+
   /// This widget will take UserName and ProfilePic
   /// link as argumants..
   /// It must be created once and used by Its Object
   /// passed to each node.
 
-  const UserAppBarTile({
-    Key key,
-  }) : super(key: key);
+  const UserAppBarTile({Key key, this.user}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -445,13 +449,14 @@ class UserAppBarTile extends StatelessWidget {
             TextSpan(
                 text: 'Welcome ',
                 style: TextStyle(fontSize: 14, color: Colors.black)),
-            TextSpan(text: 'Julia  ', style: MyFonts().smallHeadingLight)
+            TextSpan(
+                text: '${user.displayName.split(' ')[0]} ',
+                style: MyFonts().smallHeadingLight)
           ]),
         ),
         CircleAvatar(
           radius: 20,
-          backgroundImage: NetworkImage(
-              'https://images.unsplash.com/photo-1573275048283-c4945bdedbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'),
+          backgroundImage: NetworkImage(user.photoURL),
         ),
         SizedBox(width: 10),
       ],
