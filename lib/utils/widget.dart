@@ -1,5 +1,5 @@
 import 'package:TreatBees/pages/menu.dart';
-import 'package:TreatBees/utils/colors.dart';
+import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

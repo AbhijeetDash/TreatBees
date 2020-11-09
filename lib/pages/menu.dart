@@ -1,6 +1,6 @@
 import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/pages/orderDetails.dart';
-import 'package:TreatBees/utils/colors.dart';
+import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

@@ -1,5 +1,5 @@
 import 'package:TreatBees/pages/home.dart';
-import 'package:TreatBees/utils/colors.dart';
+import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,9 +20,7 @@ class _OrdState extends State<Ord> {
   Widget delivery;
   Color delCol;
   TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
-  String _hour;
-  String _minute;
-  String _time;
+  String _hour, _minute, _time;
   TextEditingController _timeController = TextEditingController();
 
   _OrdState(this.selection);
