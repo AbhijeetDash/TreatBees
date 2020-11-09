@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/utils/colors.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -87,6 +90,32 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     );
   }
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+
+  Future<User> signIn() async {
+    Firebase.initializeApp();
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final UserCredential authResult =
+        await _auth.signInWithCredential(credential);
+    final User user = authResult.user;
+
+    return user;
+  }
+
+  Future<User> loginIn() async {
+    if (await googleSignIn.isSignedIn()) {}
+    return _auth.currentUser;
+  }
+
   void drive() {
     fadeController = new AnimationController(
         duration: Duration(milliseconds: 400), vsync: this);
@@ -150,8 +179,13 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                   ],
                 ),
                 onPressed: () {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => Home(sp: sp)));
+                  signIn().then((value) {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => Home(
+                              sp: sp,
+                              user: value,
+                            )));
+                  });
                 }),
           ),
         );
@@ -169,8 +203,12 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
           ),
         );
         Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => Home(sp: null)));
+          loginIn().then((value) =>
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => Home(
+                        sp: null,
+                        user: value,
+                      ))));
         });
       });
     }

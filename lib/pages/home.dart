@@ -1,12 +1,14 @@
 import 'package:TreatBees/utils/colors.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   final SharedPreferences sp;
-  Home({@required this.sp});
+  final User user;
+  Home({@required this.sp, this.user});
   @override
   _HomeState createState() => _HomeState();
 }
@@ -59,17 +61,16 @@ class _HomeState extends State<Home> {
                         alignment: Alignment.centerLeft,
                         child: ListTile(
                           title: Text(
-                            "Julia Nolk",
+                            widget.user.displayName,
                             style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                           subtitle: Text(
-                            "juila.nolk@gmail.com",
+                            widget.user.email,
                             style: TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                           leading: CircleAvatar(
                             radius: 25,
-                            backgroundImage: NetworkImage(
-                                'https://images.unsplash.com/photo-1573275048283-c4945bdedbe7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'),
+                            backgroundImage: NetworkImage(widget.user.photoURL),
                           ),
                         ),
                         decoration: BoxDecoration(
@@ -121,7 +122,11 @@ class _HomeState extends State<Home> {
             tag: "Title",
             child: TitleWidget(),
           ),
-          actions: [UserAppBarTile()],
+          actions: [
+            UserAppBarTile(
+              user: widget.user,
+            )
+          ],
         ),
         body: Container(
           alignment: Alignment.center,
@@ -166,46 +171,55 @@ class _HomeState extends State<Home> {
                       icon: Icons.local_cafe_outlined,
                       title: "Cafe Coffee Day",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.fastfood,
                       title: "KFC",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.food_bank_outlined,
                       title: "Canteen",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.local_cafe_outlined,
                       title: "Cafe Coffee Day",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.fastfood,
                       title: "KFC",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.food_bank_outlined,
                       title: "Canteen",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.local_cafe_outlined,
                       title: "Cafe Coffee Day",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.fastfood,
                       title: "KFC",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                     Cafetile(
                       icon: Icons.food_bank_outlined,
                       title: "Canteen",
                       subtitle: "Visit for offers",
+                      user: widget.user,
                     ),
                   ],
                 ),

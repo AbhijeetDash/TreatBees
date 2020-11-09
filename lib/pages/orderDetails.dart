@@ -2,12 +2,14 @@ import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/utils/colors.dart';
 import 'package:TreatBees/utils/selections.dart';
 import 'package:TreatBees/utils/widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Ord extends StatefulWidget {
   final Selections selection;
+  final User user;
 
-  const Ord({Key key, @required this.selection}) : super(key: key);
+  const Ord({Key key, @required this.selection, this.user}) : super(key: key);
   @override
   _OrdState createState() => _OrdState(selection);
 }
@@ -70,12 +72,19 @@ class _OrdState extends State<Ord> {
           onPressed: () {
             selection.selectedName = [];
             selection.selectedPrice = [];
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => Home(sp: null)));
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => Home(
+                      sp: null,
+                      user: widget.user,
+                    )));
           },
         ),
         title: Hero(tag: "Title", child: TitleWidget()),
-        actions: [UserAppBarTile()],
+        actions: [
+          UserAppBarTile(
+            user: widget.user,
+          )
+        ],
       ),
       body: Container(
         color: MyColors().alice,

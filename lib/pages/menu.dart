@@ -1,12 +1,15 @@
+import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/pages/orderDetails.dart';
 import 'package:TreatBees/utils/colors.dart';
 import 'package:TreatBees/utils/widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
   final String cafeName;
+  final User user;
 
-  Menu({@required this.cafeName});
+  Menu({@required this.cafeName, this.user});
 
   @override
   _MenuState createState() => _MenuState();
@@ -20,8 +23,24 @@ class _MenuState extends State<Menu> {
         backgroundColor: MyColors().alice,
         elevation: 0.0,
         titleSpacing: 20.0,
+        leading: IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () {
+            selections.selectedName = [];
+            selections.selectedPrice = [];
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => Home(
+                      sp: null,
+                      user: widget.user,
+                    )));
+          },
+        ),
         title: Hero(tag: "Title", child: TitleWidget()),
-        actions: [UserAppBarTile()],
+        actions: [
+          UserAppBarTile(
+            user: widget.user,
+          )
+        ],
       ),
       body: Container(
         color: MyColors().alice,
@@ -107,7 +126,10 @@ class _MenuState extends State<Menu> {
       floatingActionButton: RawMaterialButton(
         onPressed: () {
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => Ord(selection: selections)));
+              builder: (context) => Ord(
+                    selection: selections,
+                    user: widget.user,
+                  )));
         },
         shape: StadiumBorder(),
         fillColor: Colors.orange,
