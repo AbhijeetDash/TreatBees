@@ -179,6 +179,18 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                   ],
                 ),
                 onPressed: () {
+                  setState(() {
+                    button = Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(Colors.orange),
+                        ),
+                      ),
+                    );
+                  });
                   signIn().then((value) {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => Home(
