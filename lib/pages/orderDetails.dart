@@ -2,12 +2,14 @@ import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
 import 'package:TreatBees/utils/widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class Ord extends StatefulWidget {
   final Selections selection;
+  final User user;
 
-  const Ord({Key key, @required this.selection}) : super(key: key);
+  const Ord({Key key, @required this.selection, this.user}) : super(key: key);
   @override
   _OrdState createState() => _OrdState(selection);
 }
@@ -18,9 +20,7 @@ class _OrdState extends State<Ord> {
   Widget delivery;
   Color delCol;
   TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
-  String _hour;
-  String _minute;
-  String _time;
+  String _hour, _minute, _time;
   TextEditingController _timeController = TextEditingController();
 
   _OrdState(this.selection);
@@ -70,12 +70,19 @@ class _OrdState extends State<Ord> {
           onPressed: () {
             selection.selectedName = [];
             selection.selectedPrice = [];
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => Home()));
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => Home(
+                      sp: null,
+                      user: widget.user,
+                    )));
           },
         ),
         title: Hero(tag: "Title", child: TitleWidget()),
-        actions: [UserAppBarTile()],
+        actions: [
+          UserAppBarTile(
+            user: widget.user,
+          )
+        ],
       ),
       body: Container(
         color: MyColors().alice,
