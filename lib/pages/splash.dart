@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:TreatBees/pages/account.dart';
-import 'package:TreatBees/utils/colors.dart';
+import 'package:TreatBees/utils/theme.dart';
 import 'package:flutter/material.dart';
 
 class Splash extends StatefulWidget {
@@ -13,25 +13,8 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   AnimationController fadeController;
   Animation anim;
 
-  void driver() {
-    Timer(Duration(milliseconds: 500), () {
-      fadeController.forward().whenComplete(() => {
-            Timer(Duration(milliseconds: 600), () {
-              Navigator.of(context).pushReplacement(PageRouteBuilder(
-                  pageBuilder: (a, b, c) {
-                    return Login();
-                  },
-                  transitionDuration: Duration(milliseconds: 400)));
-            })
-          });
-    });
-  }
-
   @override
   void initState() {
-    fadeController = new AnimationController(
-        duration: Duration(milliseconds: 400), vsync: this);
-    anim = new Tween(begin: 0.0, end: 1.0).animate(fadeController);
     driver();
     super.initState();
   }
@@ -81,5 +64,22 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  void driver() {
+    fadeController = new AnimationController(
+        duration: Duration(milliseconds: 400), vsync: this);
+    anim = new Tween(begin: 0.0, end: 1.0).animate(fadeController);
+    Timer(Duration(milliseconds: 500), () {
+      fadeController.forward().whenComplete(() => {
+            Timer(Duration(milliseconds: 600), () {
+              Navigator.of(context).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (a, b, c) {
+                    return Login();
+                  },
+                  transitionDuration: Duration(milliseconds: 400)));
+            })
+          });
+    });
   }
 }
