@@ -17,5 +17,7 @@ class MyFonts {
   TextStyle smallHeadingBold = new TextStyle(
       color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold);
   TextStyle smallHeadingLight = new TextStyle(
-      color: Colors.black, fontSize: 18, fontWeight: FontWeight.w300);
+
+      color: Colors.black, fontSize: 22, fontWeight: FontWeight.w300);
+
 }
