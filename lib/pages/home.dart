@@ -227,6 +227,8 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        floatingActionButton: CustomFloatingActionButton());
+        floatingActionButton: CustomFloatingActionButton(
+          user: widget.user,
+        ));
   }
 }

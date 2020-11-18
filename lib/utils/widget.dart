@@ -1,3 +1,4 @@
+import 'package:TreatBees/pages/groups.dart';
 import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
@@ -465,9 +466,9 @@ class UserAppBarTile extends StatelessWidget {
 }
 
 class CustomFloatingActionButton extends StatelessWidget {
-  const CustomFloatingActionButton({
-    Key key,
-  }) : super(key: key);
+  final User user;
+  const CustomFloatingActionButton({Key key, @required this.user})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -478,7 +479,10 @@ class CustomFloatingActionButton extends StatelessWidget {
         child: FloatingActionButton(
             elevation: 0.0,
             backgroundColor: Colors.black.withOpacity(0.0),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => Groups(user: user)));
+            },
             child: Icon(Icons.group)),
         decoration: BoxDecoration(
           gradient: LinearGradient(

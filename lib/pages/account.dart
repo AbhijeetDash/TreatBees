@@ -1,11 +1,8 @@
 import 'dart:async';
 
 import 'package:TreatBees/pages/home.dart';
-<<<<<<< HEAD
-=======
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
->>>>>>> b6f7f2b00acaa5aa5ed8b024458f1d8efb913723
 import 'package:TreatBees/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
