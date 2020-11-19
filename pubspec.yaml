@@ -35,6 +35,8 @@ dependencies:
   connectivity: ^2.0.1
   firebase_auth: ^0.18.1+2
   google_sign_in: ^4.5.5
+  cloud_functions: ^0.7.0+1
+  razorpay_flutter: ^1.2.2
   
 
 dev_dependencies:

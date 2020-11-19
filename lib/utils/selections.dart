@@ -6,6 +6,7 @@ class Selections {
   List<String> selectedName = [];
   List<int> selectedPrice = [];
   List<int> numVal = [];
+  List<Map<String, String>> finalData = [];
 
   bool contains(String key) {
     selectedName.forEach((element) {
@@ -32,5 +33,20 @@ class Selections {
     selectedPrice[selectedName.indexOf(key)] +=
         selectedPrice[selectedName.indexOf(key)];
     numVal[selectedName.indexOf(key)] = no;
+  }
+
+  List<Map<String, String>> generateFinalData() {
+    //Generate the list of ordered items
+    //[{"ItemName":,"ItemQuantity":,"TotalPrice":,"OptionalAddons":,}]
+    int len = selectedName.length;
+    for (int i = 0; i < len; i++) {
+      Map<String, String> data = {
+        "ItemName": selectedName[i],
+        "ItemQuantity": numVal[i].toString(),
+        "TotalPrice": selectedPrice[i].toString()
+      };
+      finalData.add(data);
+    }
+    return finalData;
   }
 }

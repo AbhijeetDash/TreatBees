@@ -1,4 +1,5 @@
 import 'package:TreatBees/pages/home.dart';
+import 'package:TreatBees/utils/payment.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
 import 'package:TreatBees/utils/widget.dart';
@@ -8,8 +9,10 @@ import 'package:flutter/material.dart';
 class Ord extends StatefulWidget {
   final Selections selection;
   final User user;
+  final String cafeName;
 
-  const Ord({Key key, @required this.selection, this.user}) : super(key: key);
+  const Ord({Key key, @required this.selection, this.user, this.cafeName})
+      : super(key: key);
   @override
   _OrdState createState() => _OrdState(selection);
 }
@@ -17,10 +20,10 @@ class Ord extends StatefulWidget {
 class _OrdState extends State<Ord> {
   final Selections selection;
   int total = 0;
-  Widget delivery;
+  //Widget delivery;
   Color delCol;
   TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
-  String _hour, _minute, _time;
+  String _hour, _minute, _time, _session;
   TextEditingController _timeController = TextEditingController();
 
   _OrdState(this.selection);
@@ -28,10 +31,10 @@ class _OrdState extends State<Ord> {
   @override
   void initState() {
     calTotal();
-    delivery = Container(
-      width: 10,
-      height: 10,
-    );
+    // delivery = Container(
+    //   width: 10,
+    //   height: 10,
+    // );
     delCol = MyColors().alice;
     super.initState();
   }
@@ -52,9 +55,24 @@ class _OrdState extends State<Ord> {
         selectedTime = picked;
         _hour = selectedTime.hour.toString();
         _minute = selectedTime.minute.toString();
-        _time = _hour + ' : ' + _minute;
+        _session = selectedTime.period.toString().split('.')[1];
+        if (_hour == '0') {
+          _hour = '12';
+        }
+        if (_minute == '0') {
+          _minute = '00';
+        }
+        _time = _hour + ' : ' + _minute + ' ' + _session;
         _timeController.text = _time;
       });
+  }
+
+  void gotohome() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => Home(
+              sp: null,
+              user: widget.user,
+            )));
   }
 
   @override
@@ -70,11 +88,7 @@ class _OrdState extends State<Ord> {
           onPressed: () {
             selection.selectedName = [];
             selection.selectedPrice = [];
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => Home(
-                      sp: null,
-                      user: widget.user,
-                    )));
+            gotohome();
           },
         ),
         title: Hero(tag: "Title", child: TitleWidget()),
@@ -187,72 +201,80 @@ class _OrdState extends State<Ord> {
               ),
             ),
             SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 18.0, right: 18.0),
-              child: Container(
-                width: width - 20,
-                color: delCol,
-                child: RawMaterialButton(
-                  onPressed: () {
-                    setState(() {
-                      delCol == Colors.greenAccent
-                          ? delCol = MyColors().alice
-                          : delCol = Colors.greenAccent;
-                      if (delCol == Colors.greenAccent) {
-                        delivery = Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: Container(
-                            width: width,
-                            child: Column(
-                              children: [
-                                Text(
-                                  "Enter Delivery Details",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(height: 10),
-                                TextField(
-                                  maxLines: 10,
-                                  minLines: 10,
-                                  decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText:
-                                          "Enter Any Relevant details for Deliver"),
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      } else {
-                        delivery = Container();
-                      }
-                    });
-                  },
-                  splashColor: delCol,
-                  shape: StadiumBorder(),
-                  elevation: 0.0,
-                  fillColor: delCol,
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Text("It is a Delivery",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            delivery,
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 18.0, right: 18.0),
+            //   child: Container(
+            //     width: width - 20,
+            //     color: delCol,
+            //     child: RawMaterialButton(
+            //       onPressed: () {
+            //         setState(() {
+            //           delCol == Colors.greenAccent
+            //               ? delCol = MyColors().alice
+            //               : delCol = Colors.greenAccent;
+            //           if (delCol == Colors.greenAccent) {
+            //             delivery = Padding(
+            //               padding: const EdgeInsets.all(18.0),
+            //               child: Container(
+            //                 width: width,
+            //                 child: Column(
+            //                   children: [
+            //                     Text(
+            //                       "Enter Delivery Details",
+            //                       style: TextStyle(
+            //                           fontSize: 18,
+            //                           fontWeight: FontWeight.bold),
+            //                     ),
+            //                     SizedBox(height: 10),
+            //                     TextField(
+            //                       maxLines: 10,
+            //                       minLines: 10,
+            //                       decoration: InputDecoration(
+            //                           border: OutlineInputBorder(),
+            //                           hintText:
+            //                               "Enter Any Relevant details for Deliver"),
+            //                     )
+            //                   ],
+            //                 ),
+            //               ),
+            //             );
+            //           } else {
+            //             delivery = Container();
+            //           }
+            //         });
+            //       },
+            //       splashColor: delCol,
+            //       shape: StadiumBorder(),
+            //       elevation: 0.0,
+            //       fillColor: delCol,
+            //       child: Padding(
+            //         padding: const EdgeInsets.all(14.0),
+            //         child: Text("It is a Delivery",
+            //             style: TextStyle(
+            //                 fontSize: 18, fontWeight: FontWeight.bold)),
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            // SizedBox(
+            //   height: 10,
+            // ),
+            //delivery,
             Padding(
               padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 30),
               child: Container(
                 width: width - 20,
                 color: Colors.orangeAccent,
                 child: RawMaterialButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Payments(
+                      widget.user.email,
+                      widget.cafeName,
+                      _time,
+                      selections.generateFinalData(),
+                    ).createOrder(total * 100, widget.user.displayName,
+                        widget.user.email);
+                  },
                   splashColor: Colors.orange[50],
                   shape: StadiumBorder(),
                   elevation: 0.0,

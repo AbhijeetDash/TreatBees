@@ -129,6 +129,7 @@ class _MenuState extends State<Menu> {
               builder: (context) => Ord(
                     selection: selections,
                     user: widget.user,
+                    cafeName: widget.cafeName,
                   )));
         },
         shape: StadiumBorder(),
