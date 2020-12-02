@@ -3,6 +3,7 @@ import 'package:TreatBees/utils/payment.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
 import 'package:TreatBees/utils/widget.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -10,8 +11,14 @@ class Ord extends StatefulWidget {
   final Selections selection;
   final User user;
   final String cafeName;
+  final String userPhone;
 
-  const Ord({Key key, @required this.selection, this.user, this.cafeName})
+  const Ord(
+      {Key key,
+      @required this.selection,
+      this.user,
+      this.cafeName,
+      @required this.userPhone})
       : super(key: key);
   @override
   _OrdState createState() => _OrdState(selection);
@@ -25,6 +32,7 @@ class _OrdState extends State<Ord> {
   TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
   String _hour, _minute, _time, _session;
   TextEditingController _timeController = TextEditingController();
+  bool isButtonEnabled;
 
   _OrdState(this.selection);
 
@@ -35,6 +43,7 @@ class _OrdState extends State<Ord> {
     //   width: 10,
     //   height: 10,
     // );
+    isButtonEnabled = false;
     delCol = MyColors().alice;
     super.initState();
   }
@@ -68,11 +77,23 @@ class _OrdState extends State<Ord> {
   }
 
   void gotohome() {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => Home(
-              sp: null,
-              user: widget.user,
-            )));
+    Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (a, b, c) {
+        return Home(
+          sp: null,
+          user: widget.user,
+          phone: widget.userPhone,
+        );
+      },
+      transitionDuration: Duration(milliseconds: 500),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        animation = CurvedAnimation(curve: Curves.ease, parent: animation);
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+    ));
   }
 
   @override
@@ -88,6 +109,7 @@ class _OrdState extends State<Ord> {
           onPressed: () {
             selection.selectedName = [];
             selection.selectedPrice = [];
+            selection.finalData = [];
             gotohome();
           },
         ),
@@ -184,7 +206,11 @@ class _OrdState extends State<Ord> {
                 color: Colors.orangeAccent,
                 child: RawMaterialButton(
                   onPressed: () {
-                    _selectTime(context);
+                    _selectTime(context).then((value) => {
+                          setState(() {
+                            isButtonEnabled = true;
+                          })
+                        });
                   },
                   splashColor: Colors.orange[50],
                   shape: StadiumBorder(),
@@ -264,21 +290,33 @@ class _OrdState extends State<Ord> {
               padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 30),
               child: Container(
                 width: width - 20,
-                color: Colors.orangeAccent,
+                color: isButtonEnabled ? Colors.orangeAccent : Colors.grey[200],
                 child: RawMaterialButton(
-                  onPressed: () {
-                    Payments(
-                      widget.user.email,
-                      widget.cafeName,
-                      _time,
-                      selections.generateFinalData(),
-                    ).createOrder(total * 100, widget.user.displayName,
-                        widget.user.email);
-                  },
+                  onPressed: isButtonEnabled
+                      ? () {
+                          FirebaseAnalytics()
+                              .logEvent(name: "PaymentRedirect")
+                              .then((value) => {
+                                    Payments(
+                                      widget.user.email,
+                                      widget.cafeName,
+                                      _time,
+                                      selections.generateFinalData(),
+                                      widget.userPhone,
+                                    ).createOrder(
+                                        total * 100,
+                                        widget.user.displayName,
+                                        widget.user.email,
+                                        widget.userPhone)
+                                  });
+                        }
+                      : null,
+                  disabledElevation: 0.0,
                   splashColor: Colors.orange[50],
                   shape: StadiumBorder(),
                   elevation: 0.0,
-                  fillColor: Colors.orangeAccent,
+                  fillColor:
+                      isButtonEnabled ? Colors.orangeAccent : Colors.grey[200],
                   child: Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Text("Continue to Pay",

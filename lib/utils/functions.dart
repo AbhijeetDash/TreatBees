@@ -18,19 +18,36 @@ class FirebaseCallbacks {
     return getGroupsCallable.call().then((value) => value.data);
   }
 
+  Future<dynamic> createUser(String email, String name, String phoneNum) {
+    HttpsCallable createUserCallable =
+        FirebaseFunctions.instance.httpsCallable('createUser');
+    return createUserCallable.call(<Map>[
+      {"userEmail": email, "userName": name, "userPhone": phoneNum}
+    ]);
+  }
+
+  Future<dynamic> getCurrentUser(String userMail) {
+    HttpsCallable getCurrentUser =
+        FirebaseFunctions.instance.httpsCallable('getCurrentUser');
+    return getCurrentUser.call([
+      {"userMail": userMail}
+    ]).then((value) => value.data);
+  }
+
   void placeOrder(
     String userEmail,
-    cafename,
-    time,
+    String userPhno,
+    String cafename,
+    String time,
     List<Map> orderItems,
     String paymentId,
   ) {
     HttpsCallable placeOrderCallable =
         FirebaseFunctions.instance.httpsCallable('createOrder');
-    //[{"ItemName":,"ItemQuantity":,"TotalPrice":,"OptionalAddons":,}]
     placeOrderCallable.call(<Map>[
       {
         "userMail": userEmail,
+        "userPhone": userPhno,
         "cafeName": cafename,
         "orderItems": orderItems,
         "paymentID": paymentId,
@@ -40,5 +57,25 @@ class FirebaseCallbacks {
     ]).then((value) {
       print(value);
     });
+  }
+
+  Future<dynamic> getCarousels() async {
+    HttpsCallable getCarouselCallable =
+        FirebaseFunctions.instance.httpsCallable('getCarousels');
+    return getCarouselCallable.call().then((value) {
+      return value.data;
+    });
+  }
+
+  Future<dynamic> getTodaysOrders(
+    String userEmail,
+  ) async {
+    DateTime now = DateTime.now();
+    String day = '${now.day} : ${now.month} : ${now.year}';
+    HttpsCallable currentOrders =
+        FirebaseFunctions.instance.httpsCallable('getCurrentOrders');
+    return currentOrders.call([
+      {"OF": day, "userMail": userEmail}
+    ]).then((value) => value.data);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/selections.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -99,23 +100,35 @@ class Cafetile extends StatelessWidget {
       @required this.icon,
       @required this.title,
       @required this.subtitle,
-      @required this.user})
+      @required this.user,
+      @required this.userPhone})
       : super(key: key);
 
   final IconData icon;
   final String title;
   final String subtitle;
   final User user;
+  final String userPhone;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => Menu(
-                  cafeName: title,
-                  user: user,
-                )));
+        FirebaseAnalytics()
+            .logEvent(name: "CafeSelect", parameters: {"CafeName": title});
+        Navigator.of(context).push(PageRouteBuilder(
+          pageBuilder: (a, b, c) {
+            return Menu(cafeName: title, user: user, userPhone: userPhone);
+          },
+          transitionDuration: Duration(milliseconds: 500),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            animation = CurvedAnimation(curve: Curves.ease, parent: animation);
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ));
       },
       leading: Container(
         width: 50,
@@ -345,17 +358,19 @@ class OptionTile extends StatelessWidget {
       {Key key,
       @required this.icon,
       @required this.title,
-      @required this.subTitle})
+      @required this.subTitle,
+      @required this.onPressed})
       : super(key: key);
 
   final IconData icon;
   final String title;
   final String subTitle;
+  final GestureTapCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {},
+      onTap: onPressed,
       leading: Container(
         width: 50,
         height: 50,

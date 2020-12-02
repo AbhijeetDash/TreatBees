@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:TreatBees/pages/home.dart';
+import 'package:TreatBees/pages/userDetails.dart';
+import 'package:TreatBees/utils/functions.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:TreatBees/utils/theme.dart';
@@ -107,12 +110,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
     final UserCredential authResult =
         await _auth.signInWithCredential(credential);
     final User user = authResult.user;
-
+    FirebaseAnalytics().logSignUp(signUpMethod: "Google-SignIn");
     return user;
   }
 
   Future<User> loginIn() async {
-    if (await googleSignIn.isSignedIn()) {}
+    if (await googleSignIn.isSignedIn()) {
+      FirebaseAnalytics().logLogin();
+    }
     return _auth.currentUser;
   }
 
@@ -192,11 +197,24 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     );
                   });
                   signIn().then((value) {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => Home(
-                              sp: sp,
-                              user: value,
-                            )));
+                    Navigator.of(context).push(PageRouteBuilder(
+                      pageBuilder: (a, b, c) {
+                        return UserDetails(
+                          sp: sp,
+                          user: value,
+                        );
+                      },
+                      transitionDuration: Duration(milliseconds: 500),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        animation = CurvedAnimation(
+                            curve: Curves.ease, parent: animation);
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                    ));
                   });
                 }),
           ),
@@ -215,12 +233,29 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
           ),
         );
         Timer(Duration(seconds: 2), () {
-          loginIn().then((value) =>
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (context) => Home(
+          loginIn().then((value) {
+            FirebaseCallbacks().getCurrentUser(value.email).then((val) => {
+                  Navigator.of(context).push(PageRouteBuilder(
+                    pageBuilder: (a, b, c) {
+                      return Home(
                         sp: null,
                         user: value,
-                      ))));
+                        phone: val['userPhone'],
+                      );
+                    },
+                    transitionDuration: Duration(milliseconds: 500),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      animation = CurvedAnimation(
+                          curve: Curves.ease, parent: animation);
+                      return FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                    },
+                  ))
+                });
+          });
         });
       });
     }
