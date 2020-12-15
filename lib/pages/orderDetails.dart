@@ -10,14 +10,14 @@ import 'package:flutter/material.dart';
 class Ord extends StatefulWidget {
   final Selections selection;
   final User user;
-  final String cafeName;
+  final String cafeCode;
   final String userPhone;
 
   const Ord(
       {Key key,
       @required this.selection,
       this.user,
-      this.cafeName,
+      this.cafeCode,
       @required this.userPhone})
       : super(key: key);
   @override
@@ -299,7 +299,7 @@ class _OrdState extends State<Ord> {
                               .then((value) => {
                                     Payments(
                                       widget.user.email,
-                                      widget.cafeName,
+                                      widget.cafeCode,
                                       _time,
                                       selections.generateFinalData(),
                                       widget.userPhone,

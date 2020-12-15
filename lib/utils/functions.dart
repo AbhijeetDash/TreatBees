@@ -37,7 +37,7 @@ class FirebaseCallbacks {
   void placeOrder(
     String userEmail,
     String userPhno,
-    String cafename,
+    String cafecode,
     String time,
     List<Map> orderItems,
     String paymentId,
@@ -48,15 +48,13 @@ class FirebaseCallbacks {
       {
         "userMail": userEmail,
         "userPhone": userPhno,
-        "cafeName": cafename,
+        "cafecode": cafecode,
         "orderItems": orderItems,
         "paymentID": paymentId,
         "orderTime": time,
         "orderStatus": "ordered"
       }
-    ]).then((value) {
-      print(value);
-    });
+    ]).then((value) {});
   }
 
   Future<dynamic> getCarousels() async {
@@ -77,5 +75,13 @@ class FirebaseCallbacks {
     return currentOrders.call([
       {"OF": day, "userMail": userEmail}
     ]).then((value) => value.data);
+  }
+
+  Future<dynamic> getCafe() async {
+    HttpsCallable getAllCafe =
+        FirebaseFunctions.instance.httpsCallable('getAllCafe');
+    return getAllCafe.call().then((value) {
+      return value.data;
+    });
   }
 }

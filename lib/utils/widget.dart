@@ -101,13 +101,15 @@ class Cafetile extends StatelessWidget {
       @required this.title,
       @required this.subtitle,
       @required this.user,
-      @required this.userPhone})
+      @required this.userPhone,
+      @required this.cafeCode})
       : super(key: key);
 
   final IconData icon;
   final String title;
   final String subtitle;
   final User user;
+  final String cafeCode;
   final String userPhone;
 
   @override
@@ -118,7 +120,12 @@ class Cafetile extends StatelessWidget {
             .logEvent(name: "CafeSelect", parameters: {"CafeName": title});
         Navigator.of(context).push(PageRouteBuilder(
           pageBuilder: (a, b, c) {
-            return Menu(cafeName: title, user: user, userPhone: userPhone);
+            return Menu(
+              cafeName: title,
+              user: user,
+              userPhone: userPhone,
+              cafeCode: cafeCode,
+            );
           },
           transitionDuration: Duration(milliseconds: 500),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -165,7 +172,7 @@ class Cafetile extends StatelessWidget {
             fontWeight: FontWeight.w600,
             decoration: TextDecoration.none),
       ),
-      subtitle: Text("This is a good cafe"),
+      subtitle: Text(subtitle),
     );
   }
 }

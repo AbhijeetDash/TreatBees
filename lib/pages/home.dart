@@ -147,7 +147,7 @@ class _HomeState extends State<Home> {
                 future: FirebaseCallbacks().getCarousels(),
                 builder: (context, snap) {
                   List cards = [];
-                  if (snap.data != null) {
+                  if (snap.connectionState == ConnectionState.done) {
                     snap.data.forEach((doc) => {
                           cards.add(CarousTile(
                             size: size,
@@ -157,7 +157,8 @@ class _HomeState extends State<Home> {
                           ))
                         });
                   }
-                  if (snap.connectionState == ConnectionState.waiting) {
+                  if (snap.connectionState == ConnectionState.waiting ||
+                      snap.connectionState == ConnectionState.active) {
                     return Container(
                       height: MediaQuery.of(context).size.height * 0.30,
                       width: MediaQuery.of(context).size.width,
@@ -295,69 +296,35 @@ class _HomeState extends State<Home> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     ),
                   ),
-                  Cafetile(
-                    icon: Icons.local_cafe_outlined,
-                    title: "Cafe Coffee Day",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.fastfood,
-                    title: "KFC",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.food_bank_outlined,
-                    title: "Canteen",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.local_cafe_outlined,
-                    title: "Cafe Coffee Day",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.fastfood,
-                    title: "KFC",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.food_bank_outlined,
-                    title: "Canteen",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.local_cafe_outlined,
-                    title: "Cafe Coffee Day",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.fastfood,
-                    title: "KFC",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
-                  Cafetile(
-                    icon: Icons.food_bank_outlined,
-                    title: "Canteen",
-                    subtitle: "Visit for offers",
-                    user: widget.user,
-                    userPhone: widget.phone,
-                  ),
+                  // Listing all the cafe;
+                  FutureBuilder(
+                    future: FirebaseCallbacks().getCafe(),
+                    builder: (context, snapshot) {
+                      print(snapshot);
+                      if (snapshot.data != null) {
+                        print(snapshot.data[0]['INFO']['#CafeCode']);
+                        return Cafetile(
+                          cafeCode: snapshot.data[0]['INFO']['#CafeCode'],
+                          icon: Icons.food_bank_outlined,
+                          title:
+                              "${snapshot.data[0]['INFO']['RestaurantName']}",
+                          subtitle:
+                              "${snapshot.data[0]['INFO']['ServiceType']}",
+                          user: widget.user,
+                          userPhone: widget.phone,
+                        );
+                      }
+                      return Container(
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  )
+                  //Use this widget
                 ],
               ),
             ),

@@ -8,10 +8,15 @@ import 'package:flutter/material.dart';
 
 class Menu extends StatefulWidget {
   final String cafeName;
+  final String cafeCode;
   final User user;
   final String userPhone;
 
-  Menu({@required this.cafeName, this.user, @required this.userPhone});
+  Menu(
+      {@required this.cafeName,
+      this.user,
+      @required this.userPhone,
+      @required this.cafeCode});
 
   @override
   _MenuState createState() => _MenuState();
@@ -147,7 +152,7 @@ class _MenuState extends State<Menu> {
                   return Ord(
                       selection: selections,
                       user: widget.user,
-                      cafeName: widget.cafeName,
+                      cafeCode: widget.cafeCode,
                       userPhone: widget.userPhone);
                 },
                 transitionDuration: Duration(milliseconds: 500),

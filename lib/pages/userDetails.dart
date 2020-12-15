@@ -55,7 +55,7 @@ class _UserDetailsState extends State<UserDetails> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: "Enter Your Phone Numner",
+                  labelText: "Enter Your Phone Number",
                 ),
               ),
             ),
