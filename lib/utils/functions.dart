@@ -18,11 +18,17 @@ class FirebaseCallbacks {
     return getGroupsCallable.call().then((value) => value.data);
   }
 
-  Future<dynamic> createUser(String email, String name, String phoneNum) {
+  Future<dynamic> createUser(
+      String email, String name, String phoneNum, String msgToken) {
     HttpsCallable createUserCallable =
         FirebaseFunctions.instance.httpsCallable('createUser');
     return createUserCallable.call(<Map>[
-      {"userEmail": email, "userName": name, "userPhone": phoneNum}
+      {
+        "userEmail": email,
+        "userName": name,
+        "userPhone": phoneNum,
+        "msgToken": msgToken
+      }
     ]);
   }
 
@@ -35,6 +41,8 @@ class FirebaseCallbacks {
   }
 
   void placeOrder(
+    String docname,
+    String userName,
     String userEmail,
     String userPhno,
     String cafecode,
@@ -46,6 +54,8 @@ class FirebaseCallbacks {
         FirebaseFunctions.instance.httpsCallable('createOrder');
     placeOrderCallable.call(<Map>[
       {
+        "today": docname,
+        "userName": userName,
         "userMail": userEmail,
         "userPhone": userPhno,
         "cafecode": cafecode,
@@ -54,7 +64,15 @@ class FirebaseCallbacks {
         "orderTime": time,
         "orderStatus": "ordered"
       }
-    ]).then((value) {});
+    ]).then((value) {
+      // Call The send notification functions
+      HttpsCallable notify =
+          FirebaseFunctions.instance.httpsCallable('sendNotificationToOwner');
+
+      notify.call([
+        {"status": "Placed", "cafeCode": cafecode}
+      ]).then((value) => {});
+    });
   }
 
   Future<dynamic> getCarousels() async {
@@ -82,6 +100,30 @@ class FirebaseCallbacks {
         FirebaseFunctions.instance.httpsCallable('getAllCafe');
     return getAllCafe.call().then((value) {
       return value.data;
+    });
+  }
+
+  Future<dynamic> getMenu(String code) async {
+    HttpsCallable getMenu = FirebaseFunctions.instance.httpsCallable('getMenu');
+    return getMenu.call([
+      {"code": code}
+    ]).then((value) => value.data);
+  }
+
+  Future<dynamic> updateOrderStatus(String status, String code, String orderID,
+      String userEmail, String today) async {
+    HttpsCallable updateOrder =
+        FirebaseFunctions.instance.httpsCallable('updateOrderStatus');
+    updateOrder.call([
+      {
+        "orderStatus": status,
+        "cafecode": code,
+        "userMail": userEmail,
+        "orderID": orderID,
+        "today": today,
+      }
+    ]).then((value) {
+      return true;
     });
   }
 }

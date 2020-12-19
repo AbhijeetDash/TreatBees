@@ -5,10 +5,20 @@ admin.initializeApp(functions.config().firebase);
 
 exports.createUser = functions.https.onCall((data, context) => {
     const user = admin.firestore().collection("Users");
-    return user.doc(`${data[0].userEmail}`).create({
-        "userEmail": data[0].userEmail,
-        "userPhone": data[0].userPhone,
-        "userName": data[0].userName
+    return user.doc(`${data[0].userEmail}`).get().then((val) => {
+        if (val.exists) {
+            user.doc(`${data[0].userEmail}`).update({
+                "msgToken": data[0].msgToken
+            });
+            return { data: val.data() };
+        }
+
+        return user.doc(`${data[0].userEmail}`).create({
+            "userEmail": data[0].userEmail,
+            "userPhone": data[0].userPhone,
+            "userName": data[0].userName,
+            "msgToken": data[0].msgToken
+        });
     });
 });
 
@@ -19,11 +29,11 @@ exports.getCurrentUser = functions.https.onCall((data, context) => {
 
 exports.createOrder = functions.https.onCall((data, context) => {
     var datetime = new Date();
-    var month = datetime.getMonth() + 1;
-    var today = datetime.getDate() + ' : ' + month + ' : ' + datetime.getFullYear();
+    var today = data[0].today;
+    var time = datetime.getHours() + ' : ' + datetime.getMinutes();
     const cafe = admin.firestore().collection(`${data[0].cafecode}`);
     const user = admin.firestore().collection('Users').doc(`${data[0].userMail}`).collection(`${today}`);
-    user.doc(`${data[0].orderTime}`).create({
+    user.doc(`${data[0].orderTime}|${time}`).create({
         "cafeCode": data[0].cafecode,
         "orderItems": data[0].orderItems,
         "paymentID": data[0].paymentID,
@@ -31,8 +41,9 @@ exports.createOrder = functions.https.onCall((data, context) => {
         "orderTime": data[0].orderTime,
         "orderStatus": data[0].orderStatus
     });
-    return cafe.doc('CafeOrders').collection(`${today}`).doc(`${data[0].orderTime}`).create({
+    return cafe.doc('CafeOrders').collection(`${today}`).doc(`${data[0].orderTime}|${time}`).create({
         "orderBy": data[0].userMail,
+        "userName": data[0].userName,
         "orderByPhone": data[0].userPhone,
         "orderItems": data[0].orderItems,
         "paymentID": data[0].paymentID,
@@ -83,11 +94,11 @@ exports.getCurrentOrders = functions.https.onCall((data, context) => {
     })
 })
 
-exports.getAllCafe = functions.https.onCall(async(data, context) => {
+exports.getAllCafe = functions.https.onCall(async (data, context) => {
     var arry = [];
     const owners = admin.firestore().collection('Owners');
     const snap = await owners.get();
-    for(doc of snap.docs) {
+    for (doc of snap.docs) {
         const cafe = admin.firestore().collection(doc.data()['CafeCode']);
         await cafe.doc('INFO').get().then((data) => {
             arry.push({
@@ -96,4 +107,49 @@ exports.getAllCafe = functions.https.onCall(async(data, context) => {
         });
     }
     return arry
+})
+
+
+exports.sendNotificationToOwner = functions.https.onCall((data, context) => {
+    const status = data[0]['status'];
+    const cafeCode = data[0]['cafeCode'];
+
+    const cafes = admin.firestore().collection('Owners').where("CafeCode", '==', cafeCode);
+    cafes.get().then((cafeData) => {
+        console.log(cafeData);
+        cafeData.forEach((cafe) => {
+            var token = cafe.data()['msgToken']
+            switch (status) {
+                case "accepted":
+                    msg = "Order have been accepted."
+                    break;
+                case "rejected":
+                    msg = "Sorry, cafe can't accept that order\nRefund is under processing."
+                    break;
+                case "preparing":
+                    msg = "Your order is being prepared."
+                    break;
+                case "ready":
+                    msg = "Your order is ready to pick-up."
+                    break;
+                case "Placed":
+                    msg = "You have a new Order."
+                    break;
+                case "cancle":
+                    msg = "One Order is cancelled"
+                    break;
+                default:
+                    break;
+            }
+            var payload = {
+                'notification': {
+                    'title': "Order " + status,
+                    'body': msg,
+                    'sound': 'default',
+                },
+                'data': {}
+            };
+            admin.messaging().sendToDevice(token, payload).then((val) => { });
+        })
+    });
 })

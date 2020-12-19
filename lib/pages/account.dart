@@ -10,6 +10,7 @@ import 'package:TreatBees/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:firebase_messaging/firebase_messaging.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -241,6 +242,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                         sp: null,
                         user: value,
                         phone: val['userPhone'],
+                        msgToken: val['msgToken'],
                       );
                     },
                     transitionDuration: Duration(milliseconds: 500),

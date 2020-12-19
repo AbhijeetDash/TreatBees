@@ -95,15 +95,16 @@ class CarousTile extends StatelessWidget {
 }
 
 class Cafetile extends StatelessWidget {
-  const Cafetile(
-      {Key key,
-      @required this.icon,
-      @required this.title,
-      @required this.subtitle,
-      @required this.user,
-      @required this.userPhone,
-      @required this.cafeCode})
-      : super(key: key);
+  const Cafetile({
+    Key key,
+    @required this.icon,
+    @required this.title,
+    @required this.subtitle,
+    @required this.user,
+    @required this.userPhone,
+    @required this.cafeCode,
+    @required this.msgToken,
+  }) : super(key: key);
 
   final IconData icon;
   final String title;
@@ -111,6 +112,7 @@ class Cafetile extends StatelessWidget {
   final User user;
   final String cafeCode;
   final String userPhone;
+  final String msgToken;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +127,7 @@ class Cafetile extends StatelessWidget {
               user: user,
               userPhone: userPhone,
               cafeCode: cafeCode,
+              msgToken: msgToken,
             );
           },
           transitionDuration: Duration(milliseconds: 500),
@@ -178,23 +181,25 @@ class Cafetile extends StatelessWidget {
 }
 
 class Menutile extends StatefulWidget {
-  const Menutile(
-      {Key key,
-      @required this.icon,
-      @required this.title,
-      @required this.price})
-      : super(key: key);
+  const Menutile({
+    Key key,
+    @required this.icon,
+    @required this.title,
+    @required this.price,
+    @required this.avai,
+  }) : super(key: key);
 
   final IconData icon;
   final String title;
   final String price;
+  final String avai;
 
   @override
   _MenutileState createState() => _MenutileState();
 }
 
 class _MenutileState extends State<Menutile> {
-  List<Color> grad;
+  List<Color> grad, brad;
   bool enab;
   Widget trail;
   int no;
@@ -206,6 +211,7 @@ class _MenutileState extends State<Menutile> {
       MyColors().shadowDark,
       MyColors().alice,
     ];
+    brad = [Colors.grey, Colors.grey];
     no = 0;
     trail = Container(width: 0, height: 0);
     super.initState();
@@ -216,8 +222,10 @@ class _MenutileState extends State<Menutile> {
       if (no == 0) {
         tapLogic();
       } else {
-        no += 1;
-        selections.update(no, widget.title);
+        if (widget.avai == "available") {
+          no += 1;
+          selections.update(no, widget.title);
+        }
       }
     });
   }
@@ -236,10 +244,12 @@ class _MenutileState extends State<Menutile> {
   void tapLogic() {
     setState(() {
       if (!enab) {
-        grad = [Colors.lightGreen[200], Colors.lightGreen[400]];
-        enab = true;
-        no = 1;
-        selections.pushItem(widget.title, int.parse(widget.price));
+        if (widget.avai == "available") {
+          grad = [Colors.lightGreen[200], Colors.lightGreen[400]];
+          enab = true;
+          no = 1;
+          selections.pushItem(widget.title, int.parse(widget.price));
+        }
       } else {
         grad = [
           MyColors().shadowDark,
@@ -292,7 +302,12 @@ class _MenutileState extends State<Menutile> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: grad)),
-                    child: Icon(widget.icon),
+                    child: Icon(
+                      widget.icon,
+                      color: widget.avai == "available"
+                          ? Colors.black
+                          : Colors.grey,
+                    ),
                   ),
                 ),
                 Column(
@@ -304,55 +319,79 @@ class _MenutileState extends State<Menutile> {
                       widget.title,
                       style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black,
+                          color: widget.avai == "available"
+                              ? Colors.black
+                              : Colors.grey,
                           fontWeight: FontWeight.w600,
                           decoration: TextDecoration.none),
                     ),
                     SizedBox(
                       height: 5,
                     ),
-                    Text(widget.price)
+                    Row(
+                      children: [
+                        Text(widget.price,
+                            style: TextStyle(
+                              color: widget.avai == "available"
+                                  ? Colors.black
+                                  : Colors.grey,
+                            )),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(' ' + widget.avai.toUpperCase() + ' ',
+                            style: TextStyle(
+                                wordSpacing: 5,
+                                backgroundColor: widget.avai == "available"
+                                    ? Colors.green
+                                    : Colors.red,
+                                color: Colors.white,
+                                fontSize: 11))
+                      ],
+                    )
                   ],
                 ),
               ],
             ),
-            Container(
-                child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RawMaterialButton(
-                  constraints: BoxConstraints(minWidth: 20),
-                  onPressed: inc,
-                  child: CircleAvatar(
-                    radius: 10,
-                    child: Icon(
-                      Icons.add,
-                      size: 15,
-                    ),
-                  ),
-                ),
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: MyColors().alice,
-                  child: Text(
-                    '$no',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
-                RawMaterialButton(
-                  constraints: BoxConstraints(minWidth: 20),
-                  onPressed: dec,
-                  child: CircleAvatar(
-                    radius: 10,
-                    child: Icon(
-                      Icons.remove,
-                      size: 15,
-                    ),
-                  ),
-                ),
-              ],
-            ))
+            widget.avai == "available"
+                ? Container(
+                    child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RawMaterialButton(
+                        constraints: BoxConstraints(minWidth: 20),
+                        onPressed: inc,
+                        child: CircleAvatar(
+                          radius: 10,
+                          child: Icon(
+                            Icons.add,
+                            size: 15,
+                          ),
+                        ),
+                      ),
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: MyColors().alice,
+                        child: Text(
+                          '$no',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
+                      RawMaterialButton(
+                        constraints: BoxConstraints(minWidth: 20),
+                        onPressed: dec,
+                        child: CircleAvatar(
+                          radius: 10,
+                          child: Icon(
+                            Icons.remove,
+                            size: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ))
+                : Container()
           ],
         ),
       ),

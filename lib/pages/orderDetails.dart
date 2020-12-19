@@ -6,19 +6,21 @@ import 'package:TreatBees/utils/widget.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Ord extends StatefulWidget {
   final Selections selection;
   final User user;
   final String cafeCode;
   final String userPhone;
-
+  final String msgToken;
   const Ord(
       {Key key,
       @required this.selection,
       this.user,
       this.cafeCode,
-      @required this.userPhone})
+      @required this.userPhone,
+      @required this.msgToken})
       : super(key: key);
   @override
   _OrdState createState() => _OrdState(selection);
@@ -33,6 +35,7 @@ class _OrdState extends State<Ord> {
   String _hour, _minute, _time, _session;
   TextEditingController _timeController = TextEditingController();
   bool isButtonEnabled;
+  String docName;
 
   _OrdState(this.selection);
 
@@ -45,6 +48,11 @@ class _OrdState extends State<Ord> {
     // );
     isButtonEnabled = false;
     delCol = MyColors().alice;
+
+    var now = new DateTime.now();
+    var formatter = new DateFormat('dd-MM-yyyy');
+    String formattedDate = formatter.format(now);
+    docName = formattedDate.replaceAll("-", " : ");
     super.initState();
   }
 
@@ -83,6 +91,7 @@ class _OrdState extends State<Ord> {
           sp: null,
           user: widget.user,
           phone: widget.userPhone,
+          msgToken: widget.msgToken,
         );
       },
       transitionDuration: Duration(milliseconds: 500),
@@ -110,6 +119,7 @@ class _OrdState extends State<Ord> {
             selection.selectedName = [];
             selection.selectedPrice = [];
             selection.finalData = [];
+            selection.initialPrice = [];
             gotohome();
           },
         ),
@@ -164,7 +174,7 @@ class _OrdState extends State<Ord> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                  '${selection.selectedName[i]} X ${selection.numVal[i]}'),
+                                  '${selection.selectedName[i]} x ${selection.numVal[i]}'),
                               SizedBox(
                                 height: 30,
                               ),
@@ -227,6 +237,7 @@ class _OrdState extends State<Ord> {
               ),
             ),
             SizedBox(height: 10),
+            // Don't Delete this code..
             // Padding(
             //   padding: const EdgeInsets.only(left: 18.0, right: 18.0),
             //   child: Container(
@@ -285,7 +296,7 @@ class _OrdState extends State<Ord> {
             // SizedBox(
             //   height: 10,
             // ),
-            //delivery,
+            //Dont delete this code.. it is for delivery ui,
             Padding(
               padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 30),
               child: Container(
@@ -298,6 +309,8 @@ class _OrdState extends State<Ord> {
                               .logEvent(name: "PaymentRedirect")
                               .then((value) => {
                                     Payments(
+                                      docName,
+                                      widget.user.displayName,
                                       widget.user.email,
                                       widget.cafeCode,
                                       _time,

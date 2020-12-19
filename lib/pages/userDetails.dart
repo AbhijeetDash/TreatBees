@@ -2,13 +2,18 @@ import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/utils/functions.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserDetails extends StatefulWidget {
   final User user;
   final SharedPreferences sp;
-  const UserDetails({Key key, this.user, this.sp}) : super(key: key);
+  const UserDetails({
+    Key key,
+    this.user,
+    this.sp,
+  }) : super(key: key);
   @override
   _UserDetailsState createState() => _UserDetailsState();
 }
@@ -16,11 +21,19 @@ class UserDetails extends StatefulWidget {
 class _UserDetailsState extends State<UserDetails> {
   TextEditingController controller;
   bool isPressed = true;
+  String msgToken;
+
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   @override
   void initState() {
     controller = TextEditingController();
     isPressed = true;
+    firebaseMessaging.getToken().then((token) {
+      setState(() {
+        msgToken = token;
+      });
+    });
     super.initState();
   }
 
@@ -72,14 +85,18 @@ class _UserDetailsState extends State<UserDetails> {
                         isPressed = false;
                       });
                       FirebaseCallbacks()
-                          .createUser(widget.user.email,
-                              widget.user.displayName, controller.text)
+                          .createUser(
+                              widget.user.email,
+                              widget.user.displayName,
+                              controller.text,
+                              msgToken)
                           .then((value) {
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
                             builder: (context) => Home(
                                   sp: widget.sp,
                                   user: widget.user,
                                   phone: controller.text,
+                                  msgToken: msgToken,
                                 )));
                       });
                     },

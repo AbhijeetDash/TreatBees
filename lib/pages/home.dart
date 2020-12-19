@@ -4,6 +4,7 @@ import 'package:TreatBees/utils/functions.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +13,8 @@ class Home extends StatefulWidget {
   final SharedPreferences sp;
   final User user;
   final String phone;
-  Home({@required this.sp, this.user, @required this.phone});
+  final String msgToken;
+  Home({@required this.sp, this.user, @required this.phone, this.msgToken});
   @override
   _HomeState createState() => _HomeState();
 }
@@ -76,14 +78,14 @@ class _HomeState extends State<Home> {
                                 'https://images.unsplash.com/photo-1484300681262-5cca666b0954?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60'))),
                   ),
                   SizedBox(height: 20),
-                  OptionTile(
-                    onPressed: () {
-                      // Go to Order History Based on Dates..
-                    },
-                    icon: Icons.history,
-                    title: "Orders",
-                    subTitle: "View recent orders",
-                  ),
+                  // OptionTile(
+                  //   onPressed: () {
+                  //     // Go to Order History Based on Dates..
+                  //   },
+                  //   icon: Icons.history,
+                  //   title: "Orders",
+                  //   subTitle: "View recent orders",
+                  // ),
                   OptionTile(
                     onPressed: () {
                       Navigator.of(context).push(PageRouteBuilder(
@@ -108,12 +110,12 @@ class _HomeState extends State<Home> {
                     title: "Collect Order",
                     subTitle: "Collect your Active Order",
                   ),
-                  OptionTile(
-                    onPressed: () {},
-                    icon: Icons.group,
-                    title: "Gangs",
-                    subTitle: "Order with your Gang",
-                  ),
+                  // OptionTile(
+                  //   onPressed: () {},
+                  //   icon: Icons.group,
+                  //   title: "Gangs",
+                  //   subTitle: "Order with your Gang",
+                  // ),
                 ],
               ),
               Padding(
@@ -143,33 +145,29 @@ class _HomeState extends State<Home> {
           children: [
             Expanded(
               flex: 2,
-              child: FutureBuilder(
-                future: FirebaseCallbacks().getCarousels(),
-                builder: (context, snap) {
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection('Carousels')
+                    .snapshots(),
+                builder: (context, stream) {
                   List cards = [];
-                  if (snap.connectionState == ConnectionState.done) {
-                    snap.data.forEach((doc) => {
-                          cards.add(CarousTile(
-                            size: size,
-                            url: doc['data']['URL'],
-                            title: doc['data']['Title'],
-                            subTitle: doc['data']['SubTitle'],
-                          ))
-                        });
+                  if (stream.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
                   }
-                  if (snap.connectionState == ConnectionState.waiting ||
-                      snap.connectionState == ConnectionState.active) {
-                    return Container(
-                      height: MediaQuery.of(context).size.height * 0.30,
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.center,
-                      child: Container(
-                        height: 60,
-                        width: 60,
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
+
+                  if (stream.hasError) {
+                    return Center(child: Text(stream.error.toString()));
                   }
+                  QuerySnapshot snap = stream.data;
+                  snap.docs.forEach((doc) => {
+                        cards.add(CarousTile(
+                          size: size,
+                          url: doc['URL'],
+                          title: doc['Title'],
+                          subTitle: doc['SubTitle'],
+                        ))
+                      });
+
                   return CarouselSlider(
                     height: 250.0,
                     autoPlay: true,
@@ -201,88 +199,86 @@ class _HomeState extends State<Home> {
                       builder: (context, snap) {
                         List<Widget> orderTile = [];
                         if (snap.data != null) {
-                          snap.data.forEach((doc) => {
-                                orderTile.add(Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Container(
-                                    height: 80,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color: MyColors().shadowDark,
-                                              offset: Offset(4.0, 4.0),
-                                              blurRadius: 15,
-                                              spreadRadius: 1),
-                                          BoxShadow(
-                                              color: MyColors().shadowLight,
-                                              offset: Offset(-4.0, -4.0),
-                                              blurRadius: 15,
-                                              spreadRadius: 1)
-                                        ],
-                                        gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              MyColors().shadowDark,
-                                              MyColors().alice,
-                                            ])),
-                                    child: ListTile(
-                                      leading: CircularPercentIndicator(
-                                        center: Icon(Icons.fastfood),
-                                        radius: 50,
-                                        lineWidth: 5.0,
-                                        percent: 0.25,
-                                        progressColor: Colors.orange,
-                                      ),
-                                      title: Text(
-                                        '${doc['data']['orderStatus'].toString().toUpperCase()}',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.left,
-                                      ),
-                                      subtitle: Text(
-                                        "The status is '${doc['data']['orderStatus']}'",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                        textAlign: TextAlign.left,
-                                      ),
-                                      trailing: RawMaterialButton(
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .push(PageRouteBuilder(
-                                            pageBuilder: (a, b, c) {
-                                              return CollectOrder(
-                                                user: widget.user,
-                                              );
-                                            },
-                                            transitionDuration:
-                                                Duration(milliseconds: 500),
-                                            transitionsBuilder: (context,
-                                                animation,
-                                                secondaryAnimation,
-                                                child) {
-                                              animation = CurvedAnimation(
-                                                  curve: Curves.ease,
-                                                  parent: animation);
-                                              return FadeTransition(
-                                                opacity: animation,
-                                                child: child,
-                                              );
-                                            },
-                                          ));
-                                        },
-                                        shape: StadiumBorder(),
-                                        fillColor: Colors.orange,
-                                        child: Text("View"),
-                                      ),
-                                    ),
+                          if (snap.data.length > 0) {
+                            orderTile.add(Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: 80,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: MyColors().shadowDark,
+                                          offset: Offset(4.0, 4.0),
+                                          blurRadius: 15,
+                                          spreadRadius: 1),
+                                      BoxShadow(
+                                          color: MyColors().shadowLight,
+                                          offset: Offset(-4.0, -4.0),
+                                          blurRadius: 15,
+                                          spreadRadius: 1)
+                                    ],
+                                    gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          MyColors().shadowDark,
+                                          MyColors().alice,
+                                        ])),
+                                child: ListTile(
+                                  leading: CircularPercentIndicator(
+                                    center: Icon(Icons.fastfood),
+                                    radius: 50,
+                                    lineWidth: 5.0,
+                                    percent: 0.25,
+                                    progressColor: Colors.orange,
                                   ),
-                                ))
-                              });
+                                  title: Text(
+                                    'Active Order',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  subtitle: Text(
+                                    "Check Order Status",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  trailing: RawMaterialButton(
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .push(PageRouteBuilder(
+                                        pageBuilder: (a, b, c) {
+                                          return CollectOrder(
+                                            user: widget.user,
+                                          );
+                                        },
+                                        transitionDuration:
+                                            Duration(milliseconds: 500),
+                                        transitionsBuilder: (context, animation,
+                                            secondaryAnimation, child) {
+                                          animation = CurvedAnimation(
+                                              curve: Curves.ease,
+                                              parent: animation);
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: child,
+                                          );
+                                        },
+                                      ));
+                                    },
+                                    shape: StadiumBorder(),
+                                    fillColor: Colors.orange,
+                                    child: Text("View"),
+                                  ),
+                                ),
+                              ),
+                            ));
+                          }
                         }
                         return Column(
                           children: orderTile,
@@ -300,9 +296,7 @@ class _HomeState extends State<Home> {
                   FutureBuilder(
                     future: FirebaseCallbacks().getCafe(),
                     builder: (context, snapshot) {
-                      print(snapshot);
                       if (snapshot.data != null) {
-                        print(snapshot.data[0]['INFO']['#CafeCode']);
                         return Cafetile(
                           cafeCode: snapshot.data[0]['INFO']['#CafeCode'],
                           icon: Icons.food_bank_outlined,
@@ -312,6 +306,7 @@ class _HomeState extends State<Home> {
                               "${snapshot.data[0]['INFO']['ServiceType']}",
                           user: widget.user,
                           userPhone: widget.phone,
+                          msgToken: widget.msgToken,
                         );
                       }
                       return Container(

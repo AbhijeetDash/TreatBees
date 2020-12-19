@@ -6,6 +6,7 @@ class Selections {
   List<String> selectedName = [];
   List<int> selectedPrice = [];
   List<int> numVal = [];
+  List<int> initialPrice = [];
   List<Map<String, String>> finalData = [];
 
   bool contains(String key) {
@@ -21,17 +22,19 @@ class Selections {
     selectedName.add(key);
     selectedPrice.add(price);
     numVal.add(1);
+    initialPrice.add(price);
   }
 
   void popItem(String key, int price) {
     selectedPrice.removeAt(selectedName.indexOf(key));
     numVal.removeAt(selectedName.indexOf(key));
+    initialPrice.removeAt(selectedName.indexOf(key));
     selectedName.remove(key);
   }
 
   void update(int no, String key) {
-    selectedPrice[selectedName.indexOf(key)] +=
-        selectedPrice[selectedName.indexOf(key)];
+    selectedPrice[selectedName.indexOf(key)] =
+        initialPrice[selectedName.indexOf(key)] * no;
     numVal[selectedName.indexOf(key)] = no;
   }
 

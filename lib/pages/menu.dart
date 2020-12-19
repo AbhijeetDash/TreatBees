@@ -1,5 +1,6 @@
 import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/pages/orderDetails.dart';
+import 'package:TreatBees/utils/functions.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -11,12 +12,14 @@ class Menu extends StatefulWidget {
   final String cafeCode;
   final User user;
   final String userPhone;
-
+  //Message Token of Cafe
+  final String msgToken;
   Menu(
       {@required this.cafeName,
       this.user,
       @required this.userPhone,
-      @required this.cafeCode});
+      @required this.cafeCode,
+      @required this.msgToken});
 
   @override
   _MenuState createState() => _MenuState();
@@ -25,6 +28,7 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: MyColors().alice,
@@ -41,6 +45,7 @@ class _MenuState extends State<Menu> {
                   sp: null,
                   user: widget.user,
                   phone: widget.userPhone,
+                  // msgToken: widget.msgToken,
                 );
               },
               transitionDuration: Duration(milliseconds: 500),
@@ -65,7 +70,9 @@ class _MenuState extends State<Menu> {
       ),
       body: Container(
         color: MyColors().alice,
-        child: ListView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: EdgeInsets.only(
@@ -81,66 +88,62 @@ class _MenuState extends State<Menu> {
                     decoration: TextDecoration.none),
               ),
             ),
-            MenuSectionHeading(title: "Refreshing Tea"),
-            Menutile(
-              icon: Icons.emoji_food_beverage,
-              title: "Asam Tea",
-              price: "120",
+            SizedBox(
+              height: 10,
             ),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Masala Chai",
-                price: "120"),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Darjeeling Tea",
-                price: "126"),
-            MenuSectionHeading(
-              title: "Cold Coffee Delights",
+            Container(
+              height: size.height * 0.8,
+              child: FutureBuilder(
+                future: FirebaseCallbacks().getMenu(widget.cafeCode),
+                builder: (context, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  List<String> mainMenu = [];
+                  List<Map<dynamic, dynamic>> menuItems = [];
+                  snap.data[0]['Categories']['categories'].forEach((cat) {
+                    mainMenu.add(cat);
+                  });
+                  snap.data[1]['Items']['items'].forEach((item) {
+                    menuItems.add(item);
+                  });
+                  return ListView.builder(
+                    itemCount: mainMenu.length,
+                    itemBuilder: (context, index) {
+                      List<Widget> cateItems = [];
+                      menuItems.forEach((element) {
+                        if (element['Category'] == mainMenu[index]) {
+                          cateItems.add(Menutile(
+                              icon: Icons.emoji_food_beverage,
+                              title: element['DishName'],
+                              price: element['Price'],
+                              avai: element['Availability']));
+                        }
+                      });
+                      return Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MenuSectionHeading(title: mainMenu[index]),
+                            Column(
+                              children: cateItems,
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-            Menutile(
-              icon: Icons.emoji_food_beverage,
-              title: "Devils own vanila cream",
-              price: "266",
-            ),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Devil’s Own Cocoa Cream",
-                price: "212"),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Dark Frappe",
-                price: "226"),
-            MenuSectionHeading(title: "Refreshing Tea"),
-            Menutile(
-              icon: Icons.emoji_food_beverage,
-              title: "Asam Tea",
-              price: "120",
-            ),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Masala Chai",
-                price: "120"),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Darjeeling Tea",
-                price: "126"),
-            MenuSectionHeading(
-              title: "Cold Coffee Delights",
-            ),
-            Menutile(
-              icon: Icons.emoji_food_beverage,
-              title: "Devils own vanila cream",
-              price: "266",
-            ),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Devil’s Own Cocoa Cream",
-                price: "212"),
-            Menutile(
-                icon: Icons.emoji_food_beverage,
-                title: "Dark Frappe",
-                price: "226"),
+            // MenuSectionHeading(title: "Refreshing Tea"),
+            // Menutile(
+            //   icon: Icons.emoji_food_beverage,
+            //   title: "Asam Tea",
+            //   price: "120",
+            // ),
           ],
         ),
       ),
@@ -150,10 +153,12 @@ class _MenuState extends State<Menu> {
               .push(PageRouteBuilder(
                 pageBuilder: (a, b, c) {
                   return Ord(
-                      selection: selections,
-                      user: widget.user,
-                      cafeCode: widget.cafeCode,
-                      userPhone: widget.userPhone);
+                    selection: selections,
+                    user: widget.user,
+                    cafeCode: widget.cafeCode,
+                    userPhone: widget.userPhone,
+                    msgToken: widget.msgToken,
+                  );
                 },
                 transitionDuration: Duration(milliseconds: 500),
                 transitionsBuilder:

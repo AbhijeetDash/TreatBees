@@ -3,12 +3,14 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class Payments {
   Razorpay _razorpay;
-  String userEmail, cafecode, time, userPhno;
+  String userEmail, cafecode, time, userPhno, userName, docName;
   List<Map<String, String>> orderItems = [];
   String paymentId;
 
-  Payments(String userEmail, String cafecode, String time,
-      List<Map<String, String>> orderItems, String userPhno) {
+  Payments(String docName, String userName, String userEmail, String cafecode,
+      String time, List<Map<String, String>> orderItems, String userPhno) {
+    this.docName = docName;
+    this.userName = userName;
     this.userEmail = userEmail;
     this.cafecode = cafecode;
     this.time = time;
@@ -42,8 +44,8 @@ class Payments {
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     // Add Order to the database with payment status..
     // cafecode would be cafeID in the form of cafecode@TBID
-    FirebaseCallbacks().placeOrder(
-        userEmail, userPhno, cafecode, time, orderItems, response.paymentId);
+    FirebaseCallbacks().placeOrder(docName, userName, userEmail, userPhno,
+        cafecode, time, orderItems, response.paymentId);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
