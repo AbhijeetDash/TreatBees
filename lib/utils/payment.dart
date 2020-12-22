@@ -4,11 +4,11 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 class Payments {
   Razorpay _razorpay;
   String userEmail, cafecode, time, userPhno, userName, docName;
-  List<Map<String, String>> orderItems = [];
+  List<Map<String, dynamic>> orderItems = [];
   String paymentId;
 
   Payments(String docName, String userName, String userEmail, String cafecode,
-      String time, List<Map<String, String>> orderItems, String userPhno) {
+      String time, String userPhno, List<Map<String, dynamic>> orderItems) {
     this.docName = docName;
     this.userName = userName;
     this.userEmail = userEmail;
@@ -22,7 +22,12 @@ class Payments {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  void createOrder(int amount, String uName, String uEmail, String userPhone) {
+  void createOrder(
+    int amount,
+    String uName,
+    String uEmail,
+    String userPhone,
+  ) {
     var options = {
       'key': 'rzp_test_qZ6mpIbWNzYTaI',
       'amount': amount,

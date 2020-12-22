@@ -1,3 +1,4 @@
+import 'package:TreatBees/pages/finalCollect.dart';
 import 'package:TreatBees/utils/functions.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
@@ -8,7 +9,6 @@ import 'package:intl/intl.dart';
 
 class CollectOrder extends StatefulWidget {
   final User user;
-
   const CollectOrder({Key key, @required this.user}) : super(key: key);
 
   @override
@@ -193,16 +193,18 @@ class _CollectOrderState extends State<CollectOrder> {
                                                       [i]['ItemName'] +
                                                   " X" +
                                                   querySnapshot.docs[index]
-                                                          .data()['orderItems']
-                                                      [i]['ItemQuantity'],
+                                                      .data()['orderItems'][i]
+                                                          ['ItemQuantity']
+                                                      .toString(),
                                               style: TextStyle(
                                                   color: Colors.black,
                                                   fontSize: 18),
                                             ),
                                             Text(
                                                 querySnapshot.docs[index]
-                                                        .data()['orderItems'][i]
-                                                    ['TotalPrice'],
+                                                    .data()['orderItems'][i]
+                                                        ['TotalPrice']
+                                                    .toString(),
                                                 style: TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 18))
@@ -252,7 +254,24 @@ class _CollectOrderState extends State<CollectOrder> {
                                       height: 50,
                                       color: Colors.orange,
                                       child: FlatButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            Navigator
+                                                    .of(context)
+                                                .push(MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        FinalCollect(
+                                                            cafeCode: querySnapshot
+                                                                    .docs[index]
+                                                                    .data()[
+                                                                'cafeCode'],
+                                                            orderID:
+                                                                querySnapshot
+                                                                    .docs[index]
+                                                                    .id,
+                                                            userMail: widget
+                                                                .user.email,
+                                                            date: docName)));
+                                          },
                                           child: Text(
                                             "Collect Order",
                                             style: TextStyle(
@@ -260,8 +279,7 @@ class _CollectOrderState extends State<CollectOrder> {
                                                 fontWeight: FontWeight.bold),
                                           )),
                                     )
-                                  : querySnapshot.docs[index]
-                                              .data()['orderStatus'] ==
+                                  : querySnapshot.docs[index].data()['orderStatus'] ==
                                           "rejected"
                                       ? Container(
                                           width: size.width,
@@ -345,8 +363,7 @@ class _CollectOrderState extends State<CollectOrder> {
                                                     ),
                                                   ),
                                                 )
-                                              : querySnapshot.docs[index].data()[
-                                                          'orderStatus'] ==
+                                              : querySnapshot.docs[index].data()['orderStatus'] ==
                                                       "canceled"
                                                   ? Container(
                                                       width: size.width,
@@ -364,18 +381,26 @@ class _CollectOrderState extends State<CollectOrder> {
                                                                     .bold),
                                                       ),
                                                     )
-                                                  : Container(
-                                                      width: size.width,
-                                                      height: 50,
-                                                      color: Colors.blue,
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: Text("Not Ready Yet",
-                                                          style: TextStyle(
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold))),
+                                                  : querySnapshot.docs[index].data()['orderStatus'] ==
+                                                          "collected"
+                                                      ? Container(
+                                                          width: size.width,
+                                                          height: 50,
+                                                          color: Colors.blue,
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: Text("Collected",
+                                                              style: TextStyle(
+                                                                  fontSize: 16,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold)))
+                                                      : Container(
+                                                          width: size.width,
+                                                          height: 50,
+                                                          color: Colors.blue,
+                                                          alignment: Alignment.center,
+                                                          child: Text("Not Ready Yet", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
                             ],
                           ),
                         ),

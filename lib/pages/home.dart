@@ -284,14 +284,14 @@ class _HomeState extends State<Home> {
                           children: orderTile,
                         );
                       }),
-                  Padding(
-                    padding: EdgeInsets.only(top: 10, left: 20, bottom: 10),
-                    child: Text(
-                      "Cafeterias",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: EdgeInsets.only(top: 10, left: 20, bottom: 10),
+                  //   child: Text(
+                  //     "Cafeterias",
+                  //     style:
+                  //         TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  //   ),
+                  // ),
                   // Listing all the cafe;
                   FutureBuilder(
                     future: FirebaseCallbacks().getCafe(),

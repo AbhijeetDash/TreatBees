@@ -1,11 +1,8 @@
 import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/theme.dart';
-import 'package:TreatBees/utils/selections.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-Selections selections = new Selections();
 
 class CarousTile extends StatelessWidget {
   const CarousTile(
@@ -187,12 +184,14 @@ class Menutile extends StatefulWidget {
     @required this.title,
     @required this.price,
     @required this.avai,
+    @required this.selection,
   }) : super(key: key);
 
   final IconData icon;
   final String title;
   final String price;
   final String avai;
+  final Selection selection;
 
   @override
   _MenutileState createState() => _MenutileState();
@@ -211,34 +210,12 @@ class _MenutileState extends State<Menutile> {
       MyColors().shadowDark,
       MyColors().alice,
     ];
-    brad = [Colors.grey, Colors.grey];
+    brad = [
+      Colors.grey,
+      Colors.grey,
+    ];
     no = 0;
-    trail = Container(width: 0, height: 0);
     super.initState();
-  }
-
-  void inc() {
-    setState(() {
-      if (no == 0) {
-        tapLogic();
-      } else {
-        if (widget.avai == "available") {
-          no += 1;
-          selections.update(no, widget.title);
-        }
-      }
-    });
-  }
-
-  void dec() {
-    setState(() {
-      if (no > 0) {
-        no -= 1;
-      }
-      if (no == 0) {
-        tapLogic();
-      }
-    });
   }
 
   void tapLogic() {
@@ -247,21 +224,20 @@ class _MenutileState extends State<Menutile> {
         if (widget.avai == "available") {
           grad = [Colors.lightGreen[200], Colors.lightGreen[400]];
           enab = true;
-          no = 1;
-          selections.pushItem(widget.title, int.parse(widget.price));
         }
+
+        widget.selection.selected.add(
+            {"DishName": widget.title, "Price": widget.price, "Quantity": "1"});
+
+        // add item to a list<map<string, string>>
       } else {
         grad = [
           MyColors().shadowDark,
           MyColors().alice,
         ];
-        no = 0;
         enab = false;
-        trail = Container(
-          width: 0,
-          height: 0,
-        );
-        selections.popItem(widget.title, int.parse(widget.price));
+        widget.selection.selected
+            .removeWhere((item) => item['DishName'] == widget.title);
       }
     });
   }
@@ -353,45 +329,6 @@ class _MenutileState extends State<Menutile> {
                 ),
               ],
             ),
-            widget.avai == "available"
-                ? Container(
-                    child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RawMaterialButton(
-                        constraints: BoxConstraints(minWidth: 20),
-                        onPressed: inc,
-                        child: CircleAvatar(
-                          radius: 10,
-                          child: Icon(
-                            Icons.add,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: MyColors().alice,
-                        child: Text(
-                          '$no',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                      RawMaterialButton(
-                        constraints: BoxConstraints(minWidth: 20),
-                        onPressed: dec,
-                        child: CircleAvatar(
-                          radius: 10,
-                          child: Icon(
-                            Icons.remove,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ))
-                : Container()
           ],
         ),
       ),
@@ -496,7 +433,6 @@ class UserAppBarTile extends StatelessWidget {
   /// link as argumants..
   /// It must be created once and used by Its Object
   /// passed to each node.
-
   const UserAppBarTile({Key key, this.user}) : super(key: key);
 
   @override

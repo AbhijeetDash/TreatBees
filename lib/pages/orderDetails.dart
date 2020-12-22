@@ -1,7 +1,7 @@
 import 'package:TreatBees/pages/home.dart';
+import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/payment.dart';
 import 'package:TreatBees/utils/theme.dart';
-import 'package:TreatBees/utils/selections.dart';
 import 'package:TreatBees/utils/widget.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,57 +9,81 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Ord extends StatefulWidget {
-  final Selections selection;
   final User user;
   final String cafeCode;
   final String userPhone;
-  final String msgToken;
+  final Selection selection;
   const Ord(
       {Key key,
-      @required this.selection,
       this.user,
       this.cafeCode,
       @required this.userPhone,
-      @required this.msgToken})
+      @required this.selection})
       : super(key: key);
   @override
-  _OrdState createState() => _OrdState(selection);
+  _OrdState createState() => _OrdState();
 }
 
 class _OrdState extends State<Ord> {
-  final Selections selection;
-  int total = 0;
   //Widget delivery;
   Color delCol;
+  int total = 0;
   TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
   String _hour, _minute, _time, _session;
   TextEditingController _timeController = TextEditingController();
   bool isButtonEnabled;
   String docName;
 
-  _OrdState(this.selection);
+  List<Map<String, String>> orderItems = [];
+  List<String> itemsNames = [];
+  List<int> itemQuantity = [];
+  List<int> price = [];
+  List<int> indvPrice = [];
+
+  void generateFinalData() {
+    setState(() {
+      for (var i = 0; i < itemsNames.length; i++) {
+        orderItems.add({
+          "ItemName": itemsNames[i].toString(),
+          "ItemQuantity": itemQuantity[i].toString(),
+          "TotalPrice": price[i].toString()
+        });
+      }
+    });
+  }
+
+  void seperate() {
+    widget.selection.selected.forEach((element) {
+      setState(() {
+        itemsNames.add(element['DishName']);
+        itemQuantity.add(int.parse(element['Quantity']));
+        price.add(int.parse(element['Price']));
+        indvPrice.add(
+            (int.parse(element['Price']) * int.parse(element['Quantity'])));
+      });
+    });
+  }
+
+  void calTotalPrice() {
+    setState(() {
+      total = 0;
+      indvPrice.forEach((element) {
+        total += element;
+      });
+    });
+  }
 
   @override
   void initState() {
-    calTotal();
-    // delivery = Container(
-    //   width: 10,
-    //   height: 10,
-    // );
+    seperate();
+    calTotalPrice();
     isButtonEnabled = false;
     delCol = MyColors().alice;
-
     var now = new DateTime.now();
     var formatter = new DateFormat('dd-MM-yyyy');
     String formattedDate = formatter.format(now);
     docName = formattedDate.replaceAll("-", " : ");
     super.initState();
-  }
-
-  void calTotal() {
-    selection.selectedPrice.forEach((element) {
-      total += element;
-    });
   }
 
   Future<Null> _selectTime(BuildContext context) async {
@@ -91,7 +115,6 @@ class _OrdState extends State<Ord> {
           sp: null,
           user: widget.user,
           phone: widget.userPhone,
-          msgToken: widget.msgToken,
         );
       },
       transitionDuration: Duration(milliseconds: 500),
@@ -116,10 +139,13 @@ class _OrdState extends State<Ord> {
         leading: IconButton(
           icon: Icon(Icons.close),
           onPressed: () {
-            selection.selectedName = [];
-            selection.selectedPrice = [];
-            selection.finalData = [];
-            selection.initialPrice = [];
+            setState(() {
+              widget.selection.selected = [];
+              itemsNames = [];
+              itemQuantity = [];
+              price = [];
+              indvPrice = [];
+            });
             gotohome();
           },
         ),
@@ -163,22 +189,76 @@ class _OrdState extends State<Ord> {
                   padding: const EdgeInsets.all(20.0),
                   child: ListView.builder(
                       shrinkWrap: true,
-                      itemCount: selection.selectedName.length,
+                      itemCount: itemsNames.length,
                       itemBuilder: (context, i) {
                         return Padding(
                           padding: const EdgeInsets.only(
-                            left: 18.0,
-                            right: 18.0,
-                          ),
+                              left: 18.0, right: 18.0, bottom: 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                  '${selection.selectedName[i]} x ${selection.numVal[i]}'),
+                              Container(
+                                width: width * 0.5,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('${itemsNames[i]} x '),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 30,
+                                          height: 30,
+                                          color: Colors.orange,
+                                          child: RawMaterialButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  itemQuantity[i]++;
+                                                  indvPrice[i] += price[i];
+                                                });
+                                                calTotalPrice();
+                                              },
+                                              child: Icon(Icons.add)),
+                                        ),
+                                        Container(
+                                          width: 30,
+                                          height: 30,
+                                          color: Colors.black,
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            '${itemQuantity[i].toString()}',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: 30,
+                                          height: 30,
+                                          color: Colors.orange,
+                                          child: RawMaterialButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  if (itemQuantity[i] > 1) {
+                                                    itemQuantity[i]--;
+                                                    indvPrice[i] -= price[i];
+                                                    calTotalPrice();
+                                                  }
+                                                });
+                                              },
+                                              child: Icon(Icons.remove)),
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
                               SizedBox(
                                 height: 30,
                               ),
-                              Text('RS ${selection.selectedPrice[i]}')
+                              Text('${indvPrice[i]}')
                             ],
                           ),
                         );
@@ -305,6 +385,7 @@ class _OrdState extends State<Ord> {
                 child: RawMaterialButton(
                   onPressed: isButtonEnabled
                       ? () {
+                          generateFinalData();
                           FirebaseAnalytics()
                               .logEvent(name: "PaymentRedirect")
                               .then((value) => {
@@ -314,13 +395,14 @@ class _OrdState extends State<Ord> {
                                       widget.user.email,
                                       widget.cafeCode,
                                       _time,
-                                      selections.generateFinalData(),
                                       widget.userPhone,
+                                      orderItems,
                                     ).createOrder(
-                                        total * 100,
-                                        widget.user.displayName,
-                                        widget.user.email,
-                                        widget.userPhone)
+                                      total * 100,
+                                      widget.user.displayName,
+                                      widget.user.email,
+                                      widget.userPhone,
+                                    )
                                   });
                         }
                       : null,
