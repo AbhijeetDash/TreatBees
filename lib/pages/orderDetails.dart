@@ -89,23 +89,41 @@ class _OrdState extends State<Ord> {
   Future<Null> _selectTime(BuildContext context) async {
     final TimeOfDay picked = await showTimePicker(
       context: context,
-      initialTime: selectedTime,
+      initialTime: TimeOfDay(
+          hour: DateTime.now().minute > 30
+              ? DateTime.now().hour + 1
+              : DateTime.now().hour,
+          minute: DateTime.now().minute > 30
+              ? DateTime.now().minute + 30 - 60
+              : DateTime.now().minute + 30),
     );
-    if (picked != null)
+    if (picked != null) {
       setState(() {
         selectedTime = picked;
-        _hour = selectedTime.hour.toString();
-        _minute = selectedTime.minute.toString();
-        _session = selectedTime.period.toString().split('.')[1];
-        if (_hour == '0') {
-          _hour = '12';
-        }
-        if (_minute == '0') {
-          _minute = '00';
-        }
-        _time = _hour + ' : ' + _minute + ' ' + _session;
-        _timeController.text = _time;
       });
+      double newSelectedTime = selectedTime.hour + selectedTime.minute / 60.0;
+      double nowTime = TimeOfDay.now().hour + TimeOfDay.now().minute / 60.0;
+      if (newSelectedTime > nowTime) {
+        setState(() {
+          isButtonEnabled = true;
+          _minute = selectedTime.minute.toString();
+          _session = selectedTime.period.toString().split('.')[1];
+          _hour = _session == 'pm'
+              ? (12 - selectedTime.hour)
+              : selectedTime.hour.toString();
+          if (_hour == '0') {
+            _hour = '12';
+          }
+          if (_minute == '0') {
+            _minute = '00';
+          }
+          _time = _hour + ' : ' + _minute + ' ' + _session;
+          _timeController.text = _time;
+        });
+      } else {
+        invalidTimeDialog(context);
+      }
+    }
   }
 
   void gotohome() {
@@ -126,6 +144,121 @@ class _OrdState extends State<Ord> {
         );
       },
     ));
+  }
+
+  void doneDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        child: Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 20,
+                ),
+                CircleAvatar(
+                    backgroundColor: Colors.green,
+                    child: Icon(
+                      Icons.done,
+                      color: Colors.white,
+                    )),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "Collected",
+                  style: MyFonts().smallHeadingBold,
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                  "Enjoy your meal",
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  color: Colors.orange,
+                  height: 30,
+                  child: FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      gotohome();
+                    },
+                    child: Text("Okay"),
+                  ),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+
+  void invalidTimeDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        child: Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 20,
+                ),
+                CircleAvatar(
+                    backgroundColor: Colors.green,
+                    child: Icon(
+                      Icons.done,
+                      color: Colors.white,
+                    )),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "Invalid Time",
+                  style: MyFonts().smallHeadingBold,
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                  "Please enter a valid time\nwe can't do time travel.",
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  color: Colors.orange,
+                  height: 30,
+                  child: FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("Okay"),
+                  ),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 
   @override
@@ -296,11 +429,7 @@ class _OrdState extends State<Ord> {
                 color: Colors.orangeAccent,
                 child: RawMaterialButton(
                   onPressed: () {
-                    _selectTime(context).then((value) => {
-                          setState(() {
-                            isButtonEnabled = true;
-                          })
-                        });
+                    _selectTime(context).then((value) => {});
                   },
                   splashColor: Colors.orange[50],
                   shape: StadiumBorder(),
@@ -397,12 +526,14 @@ class _OrdState extends State<Ord> {
                                       _time,
                                       widget.userPhone,
                                       orderItems,
-                                    ).createOrder(
-                                      total * 100,
-                                      widget.user.displayName,
-                                      widget.user.email,
-                                      widget.userPhone,
                                     )
+                                        .createOrder(
+                                          total * 100,
+                                          widget.user.displayName,
+                                          widget.user.email,
+                                          widget.userPhone,
+                                        )
+                                        .then((value) => {})
                                   });
                         }
                       : null,

@@ -22,7 +22,7 @@ class Payments {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  void createOrder(
+  Future<void> createOrder(
     int amount,
     String uName,
     String uEmail,

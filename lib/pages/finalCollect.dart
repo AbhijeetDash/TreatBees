@@ -70,6 +70,7 @@ class _FinalCollectState extends State<FinalCollect>
                   child: FlatButton(
                     onPressed: () {
                       Navigator.of(context).pop();
+                      Navigator.of(context).pop();
                     },
                     child: Text("Okay"),
                   ),
@@ -88,6 +89,7 @@ class _FinalCollectState extends State<FinalCollect>
     super.initState();
 
     _captureController.onCapture((data) {
+      _captureController.pause();
       if (data == widget.cafeCode) {
         FirebaseCallbacks()
             .updateOrderStatus(
