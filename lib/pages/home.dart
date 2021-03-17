@@ -30,7 +30,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
     return Scaffold(
       drawer: Drawer(
         child: Container(
@@ -284,30 +283,29 @@ class _HomeState extends State<Home> {
                           children: orderTile,
                         );
                       }),
-                  // Padding(
-                  //   padding: EdgeInsets.only(top: 10, left: 20, bottom: 10),
-                  //   child: Text(
-                  //     "Cafeterias",
-                  //     style:
-                  //         TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  //   ),
-                  // ),
-                  // Listing all the cafe;
                   FutureBuilder(
                     future: FirebaseCallbacks().getCafe(),
                     builder: (context, snapshot) {
                       if (snapshot.data != null) {
-                        return Cafetile(
-                          cafeCode: snapshot.data[0]['INFO']['#CafeCode'],
-                          icon: Icons.food_bank_outlined,
-                          title:
-                              "${snapshot.data[0]['INFO']['RestaurantName']}",
-                          subtitle:
-                              "${snapshot.data[0]['INFO']['ServiceType']}",
-                          user: widget.user,
-                          userPhone: widget.phone,
-                          msgToken: widget.msgToken,
-                        );
+                          return Container(
+                            height: 600,
+                            child: ListView.builder(
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (context, index){
+                                return Cafetile(
+                                  cafeCode: snapshot.data[index]['INFO']['#CafeCode'],
+                                  icon: Icons.food_bank_outlined,
+                                  title:
+                                  "${snapshot.data[index]['INFO']['RestaurantName']}",
+                                  subtitle:
+                                  "${snapshot.data[index]['INFO']['ServiceType']}",
+                                  user: widget.user,
+                                  userPhone: widget.phone,
+                                  msgToken: widget.msgToken,
+                                );
+                              }
+                        ),
+                          );
                       }
                       return Container(
                         alignment: Alignment.center,

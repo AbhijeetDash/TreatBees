@@ -37,58 +37,61 @@ class _MenuState extends State<Menu> {
   void doneDialog(BuildContext context) {
     showDialog(
         context: context,
-        child: Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                CircleAvatar(
-                    backgroundColor: Colors.green,
-                    child: Icon(
-                      Icons.done,
-                      color: Colors.white,
-                    )),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "Alert",
-                  style: MyFonts().smallHeadingBold,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  "Please select atleast\none item to continue",
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  color: Colors.orange,
-                  height: 30,
-                  child: FlatButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text("Okay"),
+        builder: (context) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              decoration:
+                  BoxDecoration(borderRadius: BorderRadius.circular(20)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 20,
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-              ],
+                  CircleAvatar(
+                      backgroundColor: Colors.green,
+                      child: Icon(
+                        Icons.done,
+                        color: Colors.white,
+                      )),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "Alert",
+                    style: MyFonts().smallHeadingBold,
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text(
+                    "Please select atleast\none item to continue",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    color: Colors.orange,
+                    height: 30,
+                    child: FlatButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text("Okay"),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ));
+          );
+        });
   }
 
   @override
@@ -201,12 +204,6 @@ class _MenuState extends State<Menu> {
                   },
                 ),
               ),
-              // MenuSectionHeading(title: "Refreshing Tea"),
-              // Menutile(
-              //   icon: Icons.emoji_food_beverage,
-              //   title: "Asam Tea",
-              //   price: "120",
-              // ),
             ],
           ),
         ),

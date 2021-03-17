@@ -38,7 +38,8 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
                     child: RichText(
                       text: TextSpan(children: [
                         TextSpan(text: 'Treat', style: MyFonts().headingBold),
-                        TextSpan(text: 'Bees', style: MyFonts().headingLight)
+                        TextSpan(text: 'Bees', style: MyFonts().headingLight),
+                        TextSpan(text: '\nParas Tierea', style: MyFonts().smallHeadingLight),
                       ]),
                     ),
                   ),

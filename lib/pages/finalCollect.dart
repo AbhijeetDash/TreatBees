@@ -28,8 +28,9 @@ class _FinalCollectState extends State<FinalCollect>
 
   void doneDialog(BuildContext context) {
     showDialog(
-        context: context,
-        child: Dialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Container(
@@ -81,7 +82,9 @@ class _FinalCollectState extends State<FinalCollect>
               ],
             ),
           ),
-        ));
+        );
+      },
+    );
   }
 
   @override

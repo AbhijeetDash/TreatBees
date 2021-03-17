@@ -44,17 +44,20 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                    alignment: Alignment.topCenter,
-                    padding: EdgeInsets.only(left: 30, right: 30),
-                    child: Hero(
-                      tag: "Logo",
-                      child: RichText(
-                        text: TextSpan(children: [
-                          TextSpan(text: 'Treat', style: MyFonts().headingBold),
-                          TextSpan(text: 'Bees', style: MyFonts().headingLight)
-                        ]),
-                      ),
-                    )),
+                  alignment: Alignment.topCenter,
+                  padding: EdgeInsets.only(left: 30, right: 30),
+                  child: Hero(
+                    tag: "Logo",
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(children: [
+                        TextSpan(text: 'Treat', style: MyFonts().headingBold),
+                        TextSpan(text: 'Bees', style: MyFonts().headingLight),
+                        TextSpan(text: '\nParas Tierea', style: MyFonts().smallHeadingLight),
+                      ]),
+                    ),
+                  ),
+                ),
                 SizedBox(
                   height: 8,
                 ),
@@ -63,7 +66,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                   child: SizedBox(
                       width: width * 0.7,
                       child: Text(
-                        'Hello there, we are glad to welcome you to our TreatBees community',
+                        '',
                         textAlign: TextAlign.center,
                       )),
                 ),
@@ -203,6 +206,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                         return UserDetails(
                           sp: sp,
                           user: value,
+                          fromOrderPage: false,
                         );
                       },
                       transitionDuration: Duration(milliseconds: 500),

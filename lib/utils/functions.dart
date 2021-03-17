@@ -18,8 +18,8 @@ class FirebaseCallbacks {
     return getGroupsCallable.call().then((value) => value.data);
   }
 
-  Future<dynamic> createUser(
-      String email, String name, String phoneNum, String msgToken) {
+  Future<dynamic> createUser(String email, String name, String phoneNum,
+      String address, String msgToken) {
     HttpsCallable createUserCallable =
         FirebaseFunctions.instance.httpsCallable('createUser');
     return createUserCallable.call(<Map>[
@@ -27,6 +27,7 @@ class FirebaseCallbacks {
         "userEmail": email,
         "userName": name,
         "userPhone": phoneNum,
+        "address": address,
         "msgToken": msgToken
       }
     ]);
@@ -41,15 +42,15 @@ class FirebaseCallbacks {
   }
 
   void placeOrder(
-    String docname,
-    String userName,
-    String userEmail,
-    String userPhno,
-    String cafecode,
-    String time,
-    List<Map> orderItems,
-    String paymentId,
-  ) {
+      String docname,
+      String userName,
+      String userEmail,
+      String userPhno,
+      String cafecode,
+      String time,
+      List<Map> orderItems,
+      String paymentId,
+      String orderType) {
     HttpsCallable placeOrderCallable =
         FirebaseFunctions.instance.httpsCallable('createOrder');
     placeOrderCallable.call(<Map>[
@@ -62,7 +63,8 @@ class FirebaseCallbacks {
         "orderItems": orderItems,
         "paymentID": paymentId,
         "orderTime": time,
-        "orderStatus": "ordered"
+        "orderStatus": "ordered",
+        "orderType": orderType
       }
     ]).then((value) {
       // Call The send notification functions
@@ -124,6 +126,17 @@ class FirebaseCallbacks {
       }
     ]).then((value) {
       return true;
+    });
+  }
+
+  Future<dynamic> getOneCafe(String code){
+    HttpsCallable getOneCafe = FirebaseFunctions.instance.httpsCallable('getOneCafe');
+    return getOneCafe.call([
+      {
+        "code": code
+      }
+    ]).then((value) {
+      return value.data;
     });
   }
 }

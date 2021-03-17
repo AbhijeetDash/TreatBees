@@ -1,5 +1,7 @@
 import 'package:TreatBees/pages/menu.dart';
 import 'package:TreatBees/utils/theme.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +23,7 @@ class CarousTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(15),
+      padding: EdgeInsets.only(left: 5, right: 5, top: 10),
       child: Stack(
         children: [
           Container(
@@ -91,7 +93,7 @@ class CarousTile extends StatelessWidget {
   }
 }
 
-class Cafetile extends StatelessWidget {
+class Cafetile extends StatefulWidget {
   const Cafetile({
     Key key,
     @required this.icon,
@@ -112,19 +114,25 @@ class Cafetile extends StatelessWidget {
   final String msgToken;
 
   @override
+  _CafetileState createState() => _CafetileState();
+}
+
+class _CafetileState extends State<Cafetile> {
+  @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return ListTile(
       onTap: () {
         FirebaseAnalytics()
-            .logEvent(name: "CafeSelect", parameters: {"CafeName": title});
-        Navigator.of(context).push(PageRouteBuilder(
+            .logEvent(name: "CafeSelect", parameters: {"CafeName": widget.title});
+        Navigator.of(context).pushReplacement(PageRouteBuilder(
           pageBuilder: (a, b, c) {
             return Menu(
-              cafeName: title,
-              user: user,
-              userPhone: userPhone,
-              cafeCode: cafeCode,
-              msgToken: msgToken,
+              cafeName: widget.title,
+              user: widget.user,
+              userPhone: widget.userPhone,
+              cafeCode: widget.cafeCode,
+              msgToken: widget.msgToken,
             );
           },
           transitionDuration: Duration(milliseconds: 500),
@@ -162,18 +170,52 @@ class Cafetile extends StatelessWidget {
                   MyColors().shadowDark,
                   MyColors().alice,
                 ])),
-        child: Icon(icon),
+        child: Icon(widget.icon),
       ),
       title: Text(
-        title,
+        widget.title,
         style: TextStyle(
             fontSize: 18,
             color: Colors.black,
             fontWeight: FontWeight.w600,
             decoration: TextDecoration.none),
       ),
-      subtitle: Text(subtitle),
+      subtitle: Text(widget.subtitle),
     );
+    // return Padding(
+    //   padding: const EdgeInsets.all(20.0),
+    //   child: Container(
+    //     width: size.width,
+    //       height:  size.width,
+    //       decoration: BoxDecoration(
+    //         color: Colors.grey[300],
+    //         borderRadius: BorderRadius.circular(10),
+    //         boxShadow: [
+    //           BoxShadow(
+    //               color: MyColors().shadowDark,
+    //               offset: Offset(4.0, 4.0),
+    //               blurRadius: 15,
+    //               spreadRadius: 1),
+    //           BoxShadow(
+    //               color: MyColors().shadowLight,
+    //               offset: Offset(-4.0, -4.0),
+    //               blurRadius: 15,
+    //               spreadRadius: 1)
+    //         ],
+    //         gradient: LinearGradient(
+    //             begin: Alignment.topLeft,
+    //             end: Alignment.bottomRight,
+    //             colors: [
+    //               MyColors().shadowDark,
+    //               MyColors().alice,
+    //             ])),
+    //     child: Column(
+    //       children: [
+    //
+    //       ],
+    //     ),
+    //   ),
+    // );
   }
 }
 
@@ -503,3 +545,5 @@ class CustomFloatingActionButton extends StatelessWidget {
     );
   }
 }
+
+

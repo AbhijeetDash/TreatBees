@@ -1,5 +1,6 @@
 import 'package:TreatBees/pages/home.dart';
 import 'package:TreatBees/pages/menu.dart';
+import 'package:TreatBees/pages/userDetails.dart';
 import 'package:TreatBees/utils/payment.dart';
 import 'package:TreatBees/utils/theme.dart';
 import 'package:TreatBees/utils/widget.dart';
@@ -7,6 +8,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:TreatBees/utils/functions.dart';
 
 class Ord extends StatefulWidget {
   final User user;
@@ -26,19 +28,69 @@ class Ord extends StatefulWidget {
 
 class _OrdState extends State<Ord> {
   //Widget delivery;
-  Color delCol;
-  int total = 0;
   TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
   String _hour, _minute, _time, _session;
+  int _nowHrs, _nowMin;
   TextEditingController _timeController = TextEditingController();
+  String ndropdownValue = 'Select Order Type';
+  int paymentType = 1;
+  String paymentButtonText = 'Continue to Pay';
+
+  Color delCol;
+  int total = 0;
   bool isButtonEnabled;
   String docName;
+  String orderType;
+  String userAddress = 'a';
 
   List<Map<String, String>> orderItems = [];
   List<String> itemsNames = [];
   List<int> itemQuantity = [];
   List<int> price = [];
   List<int> indvPrice = [];
+  List<String> collectOptions = ['Select Order Type', 'Pre-order', 'Takeout', 'Delivery',];
+  //
+  // void validateTime() {}
+  //
+  // void selectTime(BuildContext context) async {
+  //   final TimeOfDay picked = await showTimePicker(
+  //     context: context,
+  //     initialTime: TimeOfDay(
+  //         hour: DateTime.now().minute > 30
+  //             ? DateTime.now().hour + 1
+  //             : DateTime.now().hour,
+  //         minute: DateTime.now().minute > 30
+  //             ? DateTime.now().minute + 30 - 60
+  //             : DateTime.now().minute + 30),
+  //   );
+  //   if (picked != null) {
+  //     setState(() {
+  //       selectedTime = picked;
+  //     });
+  //     double newSelectedTime = selectedTime.hour + selectedTime.minute / 60.0;
+  //     double nowTime = TimeOfDay.now().hour + TimeOfDay.now().minute / 60.0;
+  //     if (newSelectedTime > nowTime) {
+  //       setState(() {
+  //         isButtonEnabled = true;
+  //         _minute = selectedTime.minute.toString();
+  //         _session = selectedTime.period.toString().split('.')[1];
+  //         _hour = _session == 'pm'
+  //             ? (selectedTime.hour - 12).toString()
+  //             : selectedTime.hour.toString();
+  //         if (_hour == '0') {
+  //           _hour = '12';
+  //         }
+  //         if (_minute == '0') {
+  //           _minute = '00';
+  //         }
+  //         _time = _hour + ' : ' + _minute + ' ' + _session;
+  //         _timeController.text = _time;
+  //       });
+  //     } else {
+  //       invalidTimeDialog(context);
+  //     }
+  //   }
+  // }
 
   void generateFinalData() {
     setState(() {
@@ -52,7 +104,7 @@ class _OrdState extends State<Ord> {
     });
   }
 
-  void seperate() {
+  void separate() {
     widget.selection.selected.forEach((element) {
       setState(() {
         itemsNames.add(element['DishName']);
@@ -75,7 +127,12 @@ class _OrdState extends State<Ord> {
 
   @override
   void initState() {
-    seperate();
+    FirebaseCallbacks().getCurrentUser(widget.user.email).then((value) {
+      setState(() {
+        userAddress = value['address'];
+      });
+    });
+    separate();
     calTotalPrice();
     isButtonEnabled = false;
     delCol = MyColors().alice;
@@ -86,48 +143,8 @@ class _OrdState extends State<Ord> {
     super.initState();
   }
 
-  Future<Null> _selectTime(BuildContext context) async {
-    final TimeOfDay picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay(
-          hour: DateTime.now().minute > 30
-              ? DateTime.now().hour + 1
-              : DateTime.now().hour,
-          minute: DateTime.now().minute > 30
-              ? DateTime.now().minute + 30 - 60
-              : DateTime.now().minute + 30),
-    );
-    if (picked != null) {
-      setState(() {
-        selectedTime = picked;
-      });
-      double newSelectedTime = selectedTime.hour + selectedTime.minute / 60.0;
-      double nowTime = TimeOfDay.now().hour + TimeOfDay.now().minute / 60.0;
-      if (newSelectedTime > nowTime) {
-        setState(() {
-          isButtonEnabled = true;
-          _minute = selectedTime.minute.toString();
-          _session = selectedTime.period.toString().split('.')[1];
-          _hour = _session == 'pm'
-              ? (12 - selectedTime.hour)
-              : selectedTime.hour.toString();
-          if (_hour == '0') {
-            _hour = '12';
-          }
-          if (_minute == '0') {
-            _minute = '00';
-          }
-          _time = _hour + ' : ' + _minute + ' ' + _session;
-          _timeController.text = _time;
-        });
-      } else {
-        invalidTimeDialog(context);
-      }
-    }
-  }
-
   void gotohome() {
-    Navigator.of(context).push(PageRouteBuilder(
+    Navigator.of(context).pop(PageRouteBuilder(
       pageBuilder: (a, b, c) {
         return Home(
           sp: null,
@@ -149,65 +166,69 @@ class _OrdState extends State<Ord> {
   void doneDialog(BuildContext context) {
     showDialog(
         context: context,
-        child: Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                CircleAvatar(
-                    backgroundColor: Colors.green,
-                    child: Icon(
-                      Icons.done,
-                      color: Colors.white,
-                    )),
-                SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  "Collected",
-                  style: MyFonts().smallHeadingBold,
-                ),
-                SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  "Enjoy your meal",
-                  style: TextStyle(fontSize: 16),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  color: Colors.orange,
-                  height: 30,
-                  child: FlatButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      gotohome();
-                    },
-                    child: Text("Okay"),
+        builder: (context) {
+          return Dialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              decoration:
+                  BoxDecoration(borderRadius: BorderRadius.circular(20)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 20,
                   ),
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-              ],
+                  CircleAvatar(
+                      backgroundColor: Colors.green,
+                      child: Icon(
+                        Icons.done,
+                        color: Colors.white,
+                      )),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "Collected",
+                    style: MyFonts().smallHeadingBold,
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text(
+                    "Enjoy your meal",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    color: Colors.orange,
+                    height: 30,
+                    child: FlatButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        gotohome();
+                      },
+                      child: Text("Okay"),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ));
+          );
+        });
   }
 
   void invalidTimeDialog(BuildContext context) {
     showDialog(
-        context: context,
-        child: Dialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Container(
@@ -258,7 +279,9 @@ class _OrdState extends State<Ord> {
               ],
             ),
           ),
-        ));
+        );
+      },
+    );
   }
 
   @override
@@ -332,14 +355,10 @@ class _OrdState extends State<Ord> {
                             children: [
                               Container(
                                 width: width * 0.5,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                child: Wrap(
+                                  runSpacing: 5,
                                   children: [
                                     Text('${itemsNames[i]} x '),
-                                    SizedBox(
-                                      width: 5,
-                                    ),
                                     Row(
                                       children: [
                                         Container(
@@ -391,7 +410,7 @@ class _OrdState extends State<Ord> {
                               SizedBox(
                                 height: 30,
                               ),
-                              Text('${indvPrice[i]}')
+                              Text('RS ${indvPrice[i]}')
                             ],
                           ),
                         );
@@ -422,90 +441,253 @@ class _OrdState extends State<Ord> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 20),
-              child: Container(
-                width: width - 20,
-                color: Colors.orangeAccent,
-                child: RawMaterialButton(
-                  onPressed: () {
-                    _selectTime(context).then((value) => {});
-                  },
-                  splashColor: Colors.orange[50],
-                  shape: StadiumBorder(),
-                  elevation: 0.0,
-                  fillColor: Colors.orangeAccent,
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Text(
-                        _time == null ? "Choose Pick-up/Delivery Time" : _time,
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
+            SizedBox(
+              height: 10,
             ),
-            SizedBox(height: 10),
-            // Don't Delete this code..
-            // Padding(
-            //   padding: const EdgeInsets.only(left: 18.0, right: 18.0),
-            //   child: Container(
-            //     width: width - 20,
-            //     color: delCol,
-            //     child: RawMaterialButton(
-            //       onPressed: () {
-            //         setState(() {
-            //           delCol == Colors.greenAccent
-            //               ? delCol = MyColors().alice
-            //               : delCol = Colors.greenAccent;
-            //           if (delCol == Colors.greenAccent) {
-            //             delivery = Padding(
-            //               padding: const EdgeInsets.all(18.0),
-            //               child: Container(
-            //                 width: width,
-            //                 child: Column(
-            //                   children: [
-            //                     Text(
-            //                       "Enter Delivery Details",
-            //                       style: TextStyle(
-            //                           fontSize: 18,
-            //                           fontWeight: FontWeight.bold),
-            //                     ),
-            //                     SizedBox(height: 10),
-            //                     TextField(
-            //                       maxLines: 10,
-            //                       minLines: 10,
-            //                       decoration: InputDecoration(
-            //                           border: OutlineInputBorder(),
-            //                           hintText:
-            //                               "Enter Any Relevant details for Deliver"),
-            //                     )
-            //                   ],
-            //                 ),
-            //               ),
-            //             );
-            //           } else {
-            //             delivery = Container();
-            //           }
-            //         });
-            //       },
-            //       splashColor: delCol,
-            //       shape: StadiumBorder(),
-            //       elevation: 0.0,
-            //       fillColor: delCol,
-            //       child: Padding(
-            //         padding: const EdgeInsets.all(14.0),
-            //         child: Text("It is a Delivery",
-            //             style: TextStyle(
-            //                 fontSize: 18, fontWeight: FontWeight.bold)),
-            //       ),
-            //     ),
-            //   ),
-            // ),
-            // SizedBox(
-            //   height: 10,
-            // ),
-            //Dont delete this code.. it is for delivery ui,
+            FutureBuilder(
+              future:  FirebaseCallbacks().getOneCafe(widget.cafeCode),
+              builder: (context, snapshot) {
+
+                if(!snapshot.hasData){
+                  return Container(
+                    height: 100,
+                    alignment: Alignment.center,
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                    ),
+                  );
+                }
+
+                if(snapshot.data['isDelivery'] == false){
+                  collectOptions.remove('Delivery');
+                }
+                if(snapshot.data['isTakeout'] == false){
+                  collectOptions.remove('Takeout');
+                }
+                if(snapshot.data['isPreOrder'] == false){
+                  collectOptions.remove('Pre-order');
+                }
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.only(left: 30.0, right: 30.0, top: 12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Select payment options', style: Theme.of(context).textTheme.subtitle2,),
+                          SizedBox(height: 10,),
+                          snapshot.data['isDelivery']? ListTile(
+                            title: const Text('Cash on Delivery - COD'),
+                            leading: Radio(
+                              value: 0,
+                              groupValue: paymentType,
+                              onChanged: (nvalue) {
+                                setState(() {
+                                  paymentButtonText = "Place Order";
+                                  isButtonEnabled = true;
+                                  paymentType = nvalue;
+                                  ndropdownValue = 'Delivery';
+                                });
+                              },
+                            ),
+                          ):Text("Sorry, this cafe is providing COD at the moment."),
+                          ListTile(
+                            title: const Text('Online Payment'),
+                            leading: Radio(
+                              value: 1,
+                              groupValue: paymentType,
+                              onChanged: (nvalue) {
+                                setState(() {
+                                  paymentButtonText = "Continue to Pay";
+                                  paymentType = nvalue;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(left: 30.0, right: 30.0),
+                      child: Container(
+                        child: DropdownButton<String>(
+                          value: ndropdownValue,
+                          icon: Icon(Icons.arrow_downward),
+                          iconSize: 24,
+                          elevation: 16,
+                          style: TextStyle(color: Colors.black),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.orange,
+                          ),
+                          onChanged: (String newValue) {
+                            if (newValue == 'Select Order Type') {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return Dialog(
+                                      child: Container(
+                                        width: 200,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SizedBox(height: 10),
+                                            Text("Not a valid type"),
+                                            SizedBox(height: 10),
+                                            RawMaterialButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              disabledElevation: 0.0,
+                                              splashColor: Colors.orange[50],
+                                              shape: StadiumBorder(),
+                                              elevation: 0.0,
+                                              fillColor: Colors.orangeAccent,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(14.0),
+                                                child: Text("Okay",
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight: FontWeight.bold)),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: 10,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  });
+                            } else {
+                              if (newValue == 'Delivery' &&
+                                  userAddress == 'Not Provided') {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => UserDetails(
+                                        fromOrderPage: true, user: widget.user)));
+                              } else {
+                                if((paymentType == 0 && newValue != 'Delivery')){
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return Dialog(
+                                          child: Container(
+                                            width: 200,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SizedBox(height: 10),
+                                                Text("Not a valid type"),
+                                                SizedBox(height: 10),
+                                                RawMaterialButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  disabledElevation: 0.0,
+                                                  splashColor: Colors.orange[50],
+                                                  shape: StadiumBorder(),
+                                                  elevation: 0.0,
+                                                  fillColor: Colors.orangeAccent,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(14.0),
+                                                    child: Text("Okay",
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.bold)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 10,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                } else {
+                                  setState(() {
+                                    ndropdownValue = newValue;
+                                    isButtonEnabled = true;
+                                  });
+                                }
+                              }
+                            }
+                          },
+                          items: collectOptions.map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Container(
+                                  width: MediaQuery.of(context).size.width - 100,
+                                  child: Text(value)),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                  ],
+                );
+              }
+            ),
+            ndropdownValue == 'Delivery'
+                ? Container(
+                    child: userAddress == 'Not Provided'
+                        ? Container(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 18.0,
+                                right: 18.0,
+                              ),
+                              child: RawMaterialButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => UserDetails(
+                                          fromOrderPage: true,
+                                          user: widget.user)));
+                                },
+                                disabledElevation: 0.0,
+                                splashColor: Colors.orange[50],
+                                elevation: 0.0,
+                                fillColor: Colors.orangeAccent,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(14.0),
+                                  child: Text("Add contact details",
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            padding: EdgeInsets.only(
+                                top: 10, bottom: 10, left: 25.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("We have the following address",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16)),
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(userAddress,
+                                    style: TextStyle(fontSize: 17)),
+                              ],
+                            ),
+                          ),
+                  )
+                : Container(),
             Padding(
               padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 30),
               child: Container(
@@ -513,20 +695,25 @@ class _OrdState extends State<Ord> {
                 color: isButtonEnabled ? Colors.orangeAccent : Colors.grey[200],
                 child: RawMaterialButton(
                   onPressed: isButtonEnabled
-                      ? () {
+                      ? paymentType == 0?(){
+                    generateFinalData();
+                    FirebaseCallbacks().placeOrder(docName, widget.user.displayName, widget.user.email, widget.userPhone,
+                        widget.cafeCode, "ASAP", orderItems, DateTime.now().toIso8601String(), ndropdownValue);
+                  }:() {
                           generateFinalData();
                           FirebaseAnalytics()
                               .logEvent(name: "PaymentRedirect")
                               .then((value) => {
                                     Payments(
-                                      docName,
-                                      widget.user.displayName,
-                                      widget.user.email,
-                                      widget.cafeCode,
-                                      _time,
-                                      widget.userPhone,
-                                      orderItems,
-                                    )
+                                            docName,
+                                            widget.user.displayName,
+                                            widget.user.email,
+                                            widget.cafeCode,
+                                            _time,
+                                            widget.userPhone,
+                                            orderItems,
+                                            context,
+                                            ndropdownValue)
                                         .createOrder(
                                           total * 100,
                                           widget.user.displayName,
@@ -545,7 +732,7 @@ class _OrdState extends State<Ord> {
                       isButtonEnabled ? Colors.orangeAccent : Colors.grey[200],
                   child: Padding(
                     padding: const EdgeInsets.all(14.0),
-                    child: Text("Continue to Pay",
+                    child: Text(paymentButtonText,
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
