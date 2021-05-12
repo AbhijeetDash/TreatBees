@@ -52,6 +52,7 @@ class FirebaseCallbacks {
       String paymentId,
       String orderType,
       String cafeName,
+      String address
       ) {
     HttpsCallable placeOrderCallable =
         FirebaseFunctions.instance.httpsCallable('createOrder');
@@ -68,7 +69,8 @@ class FirebaseCallbacks {
         "orderTime": time,
         "orderStatus": "ordered",
         "orderType": orderType,
-        "cafeName":cafeName
+        "cafeName":cafeName,
+        "useraddress": address
       }
     ]).then((value) {
       HttpsCallable notify =

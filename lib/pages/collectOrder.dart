@@ -79,11 +79,43 @@ class _CollectOrderState extends State<CollectOrder> {
                 child: ListView.builder(
                   itemCount: querySnapshot.docs.length,
                   itemBuilder: (context, index) {
+
                     int paidAmount = 0;
                     querySnapshot.docs[index].data()['orderItems'].forEach(
                         (item) =>
                             {paidAmount += int.parse(item['TotalPrice'])});
                     print( querySnapshot.docs[index].data());
+
+                    List<Widget> orderItemsWidget = [];
+
+                    querySnapshot.docs[index].data()['orderItems'].forEach((element){
+                      orderItemsWidget.add(
+                          Container(
+                            height: 30,
+                            child: Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment
+                                  .spaceBetween,
+                              children: [
+                                Text(
+                                  element['ItemName'] +
+                                      " X" +
+                                      element['ItemQuantity'],
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18),
+                                ),
+                                Text(
+                                    element['TotalPrice'],
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 18))
+                              ],
+                            ),
+                          )
+                      );
+                    });
+
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
@@ -177,42 +209,9 @@ class _CollectOrderState extends State<CollectOrder> {
                                         .data()['orderItems']
                                         .length *
                                     30.0,
-                                child: ListView.builder(
-                                    itemCount: querySnapshot.docs[index]
-                                        .data()['orderItems']
-                                        .length,
-                                    itemBuilder: (context, i) {
-                                      return Container(
-                                        height: 30,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              querySnapshot.docs[index]
-                                                          .data()['orderItems']
-                                                      [i]['ItemName'] +
-                                                  " X" +
-                                                  querySnapshot.docs[index]
-                                                      .data()['orderItems'][i]
-                                                          ['ItemQuantity']
-                                                      .toString(),
-                                              style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 18),
-                                            ),
-                                            Text(
-                                                querySnapshot.docs[index]
-                                                    .data()['orderItems'][i]
-                                                        ['TotalPrice']
-                                                    .toString(),
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 18))
-                                          ],
-                                        ),
-                                      );
-                                    }),
+                                child: Column(
+                                  children: orderItemsWidget,
+                                ),
                               ),
                               SizedBox(
                                 height: 10,

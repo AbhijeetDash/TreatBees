@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:treatbees/pages/home.dart';
 import 'package:treatbees/pages/menu.dart';
-import 'package:treatbees/pages/userDetails.dart';
 import 'package:treatbees/utils/functions.dart';
 import 'package:treatbees/utils/theme.dart';
 import 'package:treatbees/utils/widget.dart';
@@ -31,16 +31,14 @@ class Ord extends StatefulWidget {
 }
 
 class _OrdState extends State<Ord> {
+  // //Widget delivery;
+  // TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
+  // String _hour, _minute, _time, _session;
+  // int _nowHrs, _nowMin;
+  // TextEditingController _timeController = TextEditingController();
 
-/// Payment code
+  FirebaseFirestore cloudInstance;
 
-  Razorpay _razorpay;
-
-  //Widget delivery;
-  TimeOfDay selectedTime = TimeOfDay(hour: 00, minute: 00);
-  String _hour, _minute, _time, _session;
-  int _nowHrs, _nowMin;
-  TextEditingController _timeController = TextEditingController();
   String ndropdownValue = 'Delivery';
   int paymentType = 0;
   String paymentButtonText = 'Place Order';
@@ -49,12 +47,17 @@ class _OrdState extends State<Ord> {
   double total = 0;
   double paymentCharges = 0.0;
   double completeCharges = 0.0;
+  double discountValue = 0.0;
   bool isButtonEnabled;
   String docName;
   String orderType;
   String userAddress = '';
   bool showAddress = true;
+  Map<String, dynamic> discount;
+  bool discountApplied = false;
   String loadingText = 'Loading payment options';
+
+  int minOrderAmount = 0;
 
   List<Map<String, String>> orderItems = [];
   List<String> itemsNames = [];
@@ -92,43 +95,68 @@ class _OrdState extends State<Ord> {
   }
 
   void calTotalPrice() {
+
     setState(() {
       total = 0;
       indvPrice.forEach((element) {
         total += element;
       });
     });
-    setState(() {
-      paymentCharges = (((total / 0.98) - total)).ceilToDouble();
-      completeCharges = total + paymentCharges;
-    });
+
+    /// and also calculate the discount
+    double applyDis = ((total/100) * discount['Percent']);
+    if(applyDis > discount['MinDiscountAmt']){
+      setState(() {
+        completeCharges = total - 100;
+        discountApplied = true;
+      });
+    } else if(applyDis <= discount['MinDiscountAmt']){
+      setState(() {
+        completeCharges = total - applyDis;
+        discountApplied = true;
+      });
+    } else {
+      setState(() {
+        completeCharges = total;
+        discountApplied = false;
+      });
+    }
+
+    /// get the min order value for cafe
+    if(completeCharges < minOrderAmount){
+      setState(() {
+        isButtonEnabled = false;
+      });
+    } else {
+      setState(() {
+        isButtonEnabled = true;
+      });
+    }
   }
 
   @override
   void initState() {
     FirebaseCallbacks().getCurrentUser(widget.user.email).then((value) {
-      if (value['address'] != 'Not Provided') {
-        setState(() {
-          isButtonEnabled = true;
-        });
-      }
       setState(() {
         userAddress = value['address'];
         loadingText = 'We have following address.';
       });
     });
-    separate();
-    calTotalPrice();
     isButtonEnabled = false;
+    separate();
+
+    cloudInstance = FirebaseFirestore.instance;
+    cloudInstance.collection(widget.cafeCode).doc('INFO').get().then((value){
+      minOrderAmount = value.data()['MinOrderAmount'];
+      discount = value.data()['discount'];
+      calTotalPrice();
+    });
+
     delCol = MyColors().alice;
     var now = new DateTime.now();
     var formatter = new DateFormat('dd-MM-yyyy');
     String formattedDate = formatter.format(now);
     docName = formattedDate.replaceAll("-", " : ");
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
     super.initState();
   }
 
@@ -245,6 +273,13 @@ class _OrdState extends State<Ord> {
         color: MyColors().alice,
         child: ListView(
           children: [
+            SizedBox(height: 10.0,),
+            Container(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.only(left: 20.0),
+              child: Text("NOTE\n\nMinimum Order Amount for ${widget.cafeName} is RS $minOrderAmount", style: TextStyle(fontWeight: FontWeight.bold),),
+            ),
+            SizedBox(height: 10.0,),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Container(
@@ -392,23 +427,6 @@ class _OrdState extends State<Ord> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Payment Gateway Charge",
-                          style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.normal),
-                        ),
-                        Text('RS $paymentCharges',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 30.0, right: 30.0, top: 6.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
                           "Packaging Charges",
                           style: TextStyle(
                               fontSize: 14, fontWeight: FontWeight.normal),
@@ -436,6 +454,37 @@ class _OrdState extends State<Ord> {
                       ],
                     ),
                   ),
+                  discountApplied?Padding(
+                    padding: const EdgeInsets.only(
+                        left: 30.0, right: 30.0, top: 6.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Offer Applied - Discount",
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.normal),
+                        ),
+                        Text("${discount['Percent']}%",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold))
+                      ],
+                    ),
+                  ) : Container(),
+                  discountApplied?Padding(
+                    padding: const EdgeInsets.only(
+                        left: 30.0, right: 30.0, top: 6.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Up to RS ${discount['MinDiscountAmt']}",
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ) : Container(),
                   Padding(
                     padding: const EdgeInsets.only(
                         left: 30.0, right: 30.0, top: 6.0),
@@ -471,10 +520,9 @@ class _OrdState extends State<Ord> {
             SizedBox(
               height: 10,
             ),
-            FutureBuilder(
-                future: FirebaseCallbacks().getOneCafe(widget.cafeCode),
+            StreamBuilder(
+                stream: cloudInstance.collection(widget.cafeCode).doc('INFO').snapshots(),
                 builder: (context, snapshot) {
-
                   if (!snapshot.hasData) {
                     return Container(
                       height: 100,
@@ -486,14 +534,16 @@ class _OrdState extends State<Ord> {
                     );
                   }
 
-                  if (snapshot.data['isDelivery'] == false) {
+                  DocumentSnapshot cafeInfo = snapshot.data;
+
+                  if (cafeInfo.data()['isDelivery'] == false) {
                     collectOptions.remove('Delivery');
                     ndropdownValue = 'Pre-order';
                   }
-                  if (snapshot.data['isTakeout'] == false) {
+                  if (cafeInfo.data()['isTakeout'] == false) {
                     collectOptions.remove('Takeout');
                   }
-                  if (snapshot.data['isPreOrder'] == false) {
+                  if (cafeInfo.data()['isPreOrder'] == false) {
                     collectOptions.remove('Pre-order');
                   }
 
@@ -515,33 +565,22 @@ class _OrdState extends State<Ord> {
                             SizedBox(
                               height: 10,
                             ),
-                            snapshot.data['isDelivery']
-                                ? ListTile(
-                                    title: const Text('Cash or UPI on Delivery - COD'),
-                                    leading: Radio(
-                                      value: 0,
-                                      groupValue: paymentType,
-                                      onChanged: (nvalue) {
-                                        setState(() {
-                                          paymentButtonText = "Place Order";
-                                          paymentType = nvalue;
-                                          isButtonEnabled = true;
-                                          ndropdownValue = 'Delivery';
-                                        });
-                                        if (userAddress == 'Not Provided') {
-                                          setState(() {
-                                            isButtonEnabled = false;
-                                          });
-                                        } else {
-                                          setState(() {
-                                            isButtonEnabled = true;
-                                          });
-                                        }
-                                      },
-                                    ),
-                                  )
-                                : Text(
-                                    "Sorry, this cafe is not providing COD at the moment."),
+                            ListTile(
+                              title:
+                                  const Text('Cash or UPI on Delivery - COD'),
+                              leading: Radio(
+                                value: 0,
+                                groupValue: paymentType,
+                                onChanged: (nvalue) {
+                                  setState(() {
+                                    paymentButtonText = "Place Order";
+                                    paymentType = nvalue;
+                                    isButtonEnabled = true;
+                                    ndropdownValue = 'Delivery';
+                                  });
+                                },
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -552,7 +591,6 @@ class _OrdState extends State<Ord> {
                           style: Theme.of(context).textTheme.subtitle2,
                         ),
                       ),
-
                       SizedBox(
                         height: 10,
                       ),
@@ -590,28 +628,38 @@ class _OrdState extends State<Ord> {
                       SizedBox(
                         height: 10,
                       ),
-                      ndropdownValue == 'Delivery'?
-                      Container(
-                        padding: EdgeInsets.only(left: 30.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("We have the following Address", style: Theme.of(context).textTheme.subtitle2,),
-                            SizedBox(height: 10.0,),
-                            Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.black)
+                      ndropdownValue == 'Delivery'
+                          ? Container(
+                              padding: EdgeInsets.only(left: 30.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "We have the following Address",
+                                    style:
+                                        Theme.of(context).textTheme.subtitle2,
+                                  ),
+                                  SizedBox(
+                                    height: 10.0,
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        border:
+                                            Border.all(color: Colors.black)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        userAddress.replaceAll(', ', ',\n'),
+                                        style: TextStyle(
+                                          fontSize: 14.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(userAddress.replaceAll(', ', ',\n'), style: TextStyle(
-                                  fontSize: 14.0,
-                                ),),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ):Container()
+                            )
+                          : Container()
                     ],
                   );
                 }),
@@ -622,107 +670,95 @@ class _OrdState extends State<Ord> {
                 color: isButtonEnabled ? Colors.orangeAccent : Colors.grey[200],
                 child: RawMaterialButton(
                   onPressed: isButtonEnabled
-                      ? paymentType == 0
-                          ? () {
-                    /// COD
-                    generateFinalData();
-                    FirebaseAnalytics().logEvent(name: "COD-ORDER").then((value){
-
-                      FirebaseCallbacks().placeOrder(
-                          docName,
-                          widget.user.displayName,
-                          widget.user.email,
-                          widget.userPhone,
-                          widget.cafeCode,
-                          DateTime.now().toIso8601String(),
-                          orderItems,
-                          "COD",
-                          ndropdownValue,
-                          widget.cafeName);
-                    }).then((value){
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              child: Container(
-                                width: 200,
-                                padding: EdgeInsets.all(20.0),
-                                child: Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      child: Icon(
-                                        Icons.done_all,
-                                        color: Colors.white,
-                                      ),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                    SizedBox(height: 15),
-                                    Text(
-                                      "Thanks! Your order was successfully placed.",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text("In case the order status is not updating, Visit the help page from the side menu.",
-                                        style: TextStyle(
-                                          color: Colors.black, fontWeight: FontWeight.bold
-                                        ), textAlign: TextAlign.center,),
-                                    SizedBox(height: 10),
-                                    RawMaterialButton(
-                                      onPressed: () {
-                                        Timer(Duration(seconds: 2),(){
-                                          int count = 0;
-                                          Navigator.popUntil(context, (route) {
-                                            return count++ == 3;
-                                          });
-                                        });
-                                      },
-                                      disabledElevation: 0.0,
-                                      splashColor:
-                                      Colors.orange[50],
-                                      shape: StadiumBorder(),
-                                      elevation: 0.0,
-                                      fillColor:
-                                      Colors.orangeAccent,
-                                      child: Padding(
-                                        padding:
-                                        const EdgeInsets.all(
-                                            7.0),
-                                        child: Text("Okay",
+                      ? () {
+                          /// COD
+                          generateFinalData();
+                          FirebaseAnalytics()
+                              .logEvent(name: "COD-ORDER")
+                              .then((value) {
+                            FirebaseCallbacks().placeOrder(
+                                docName,
+                                widget.user.displayName,
+                                widget.user.email,
+                                widget.userPhone,
+                                widget.cafeCode,
+                                DateTime.now().toIso8601String(),
+                                orderItems,
+                                "COD",
+                                ndropdownValue,
+                                widget.cafeName,
+                                userAddress);
+                          }).then((value) {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Dialog(
+                                    child: Container(
+                                      width: 200,
+                                      padding: EdgeInsets.all(20.0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          CircleAvatar(
+                                            child: Icon(
+                                              Icons.done_all,
+                                              color: Colors.white,
+                                            ),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                          SizedBox(height: 15),
+                                          Text(
+                                            "Thanks! Your order was successfully placed.",
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Text(
+                                            "In case the order status is not updating, Visit the help page from the side menu.",
                                             style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight:
-                                                FontWeight
-                                                    .bold)),
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          SizedBox(height: 10),
+                                          RawMaterialButton(
+                                            onPressed: () {
+                                              Timer(Duration(seconds: 2), () {
+                                                int count = 0;
+                                                Navigator.popUntil(context,
+                                                    (route) {
+                                                  return count++ == 3;
+                                                });
+                                              });
+                                            },
+                                            disabledElevation: 0.0,
+                                            splashColor: Colors.orange[50],
+                                            shape: StadiumBorder(),
+                                            elevation: 0.0,
+                                            fillColor: Colors.orangeAccent,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(7.0),
+                                              child: Text("Okay",
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 10,
+                                          )
+                                        ],
                                       ),
                                     ),
-                                    SizedBox(
-                                      height: 10,
-                                    )
-                                  ],
-                                ),
-                              ),
-                            );
-                          });
-                    });
-                            }
-                          : () {
-                              generateFinalData();
-                              FirebaseAnalytics().logEvent(name: "PaymentRedirect").then((value){
-                                createOrder(
-                                  completeCharges * 100,
-                                  widget.user.displayName,
-                                  widget.user.email,
-                                  widget.userPhone,
-                                ).then((value) {
-                                  orderItems = [];
+                                  );
                                 });
-                              });
-                            }
-                      : null,
+                          });
+                        }
+                      : (){},
                   disabledElevation: 0.0,
                   splashColor: Colors.orange[50],
                   shape: StadiumBorder(),
@@ -747,174 +783,156 @@ class _OrdState extends State<Ord> {
     );
   }
 
+  // Future<void> createOrder(
+  //   double amount,
+  //   String uName,
+  //   String uEmail,
+  //   String userPhone,
+  //   String address
+  // ) {
+  //     var options = {
+  //       'key': 'rzp_test_qZ6mpIbWNzYTaI',
+  //       'amount': amount,
+  //       'name': uName,
+  //       'description': 'Payment',
+  //       'prefill': {'email': uEmail, "phone": userPhone},
+  //       'external': {
+  //         'wallets': ['paytm']
+  //       }
+  //     };
+  //
+  //     try {
+  //       _razorpay.open(options);
+  //     } catch (e) {
+  //       print(e);
+  //     }
+  //   }
 
-
-  Future<void> createOrder(
-    double amount,
-    String uName,
-    String uEmail,
-    String userPhone,
-  ) {
-      var options = {
-        'key': 'rzp_test_qZ6mpIbWNzYTaI',
-        'amount': amount,
-        'name': uName,
-        'description': 'Payment',
-        'prefill': {'email': uEmail, "phone": userPhone},
-        'external': {
-          'wallets': ['paytm']
-        }
-      };
-
-      try {
-        _razorpay.open(options);
-      } catch (e) {
-        print(e);
-      }
-    }
-
-    void _handlePaymentSuccess(PaymentSuccessResponse response) {
-      FirebaseCallbacks().placeOrder(
-          docName,
-          widget.user.displayName,
-          widget.user.email,
-          widget.userPhone,
-          widget.cafeCode,
-          DateTime.now().toIso8601String(),
-          orderItems,
-          response.paymentId,
-          ndropdownValue,
-          widget.cafeName
-      ).then((value){
-        showDialog(
-            context: context,
-            builder: (context) {
-              return Dialog(
-                child: Container(
-                  width: 200,
-                  padding: EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment:
-                    MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment:
-                    CrossAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        child: Icon(
-                          Icons.done_all,
-                          color: Colors.white,
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                      SizedBox(height: 15),
-                      Text(
-                        "Thanks! Your order was successfully placed.",
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 10),
-                      RawMaterialButton(
-                        onPressed: () {
-                          Timer(Duration(seconds: 2), (){
-                            int count = 0;
-                            Navigator.popUntil(context, (route) {
-                              return count++ == 3;
-                            });
-                          });
-                        },
-                        disabledElevation: 0.0,
-                        splashColor:
-                        Colors.orange[50],
-                        shape: StadiumBorder(),
-                        elevation: 0.0,
-                        fillColor:
-                        Colors.orangeAccent,
-                        child: Padding(
-                          padding:
-                          const EdgeInsets.all(
-                              7.0),
-                          child: Text("Okay",
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight:
-                                  FontWeight
-                                      .bold)),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      )
-                    ],
-                  ),
-                ),
-              );
-            });
-      });
-    }
-
-    void _handlePaymentError(PaymentFailureResponse response) {
-      showDialog(
-          context: context,
-          builder: (context) {
-            return Dialog(
-              child: Container(
-                width: 200,
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisAlignment:
-                  MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment:
-                  CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      child: Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
-                    SizedBox(height: 15),
-                    Text(
-                      "Sorry your payment was not successful.",
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 10),
-                    RawMaterialButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      disabledElevation: 0.0,
-                      splashColor:
-                      Colors.orange[50],
-                      shape: StadiumBorder(),
-                      elevation: 0.0,
-                      fillColor:
-                      Colors.orangeAccent,
-                      child: Padding(
-                        padding:
-                        const EdgeInsets.all(
-                            7.0),
-                        child: Text("Okay",
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight:
-                                FontWeight
-                                    .bold)),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    )
-                  ],
-                ),
-              ),
-            );
-          });
-    }
-
-    void _handleExternalWallet(ExternalWalletResponse response) {
-      // handle error and success and do the same as Success and Error
-      
-    }
+  // void _handlePaymentSuccess(PaymentSuccessResponse response) {
+  //   FirebaseCallbacks()
+  //       .placeOrder(
+  //           docName,
+  //           widget.user.displayName,
+  //           widget.user.email,
+  //           widget.userPhone,
+  //           widget.cafeCode,
+  //           DateTime.now().toIso8601String(),
+  //           orderItems,
+  //           response.paymentId,
+  //           ndropdownValue,
+  //           widget.cafeName,
+  //           userAddress)
+  //       .then((value) {
+  //     showDialog(
+  //         context: context,
+  //         builder: (context) {
+  //           return Dialog(
+  //             child: Container(
+  //               width: 200,
+  //               padding: EdgeInsets.all(20.0),
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 crossAxisAlignment: CrossAxisAlignment.center,
+  //                 children: [
+  //                   CircleAvatar(
+  //                     child: Icon(
+  //                       Icons.done_all,
+  //                       color: Colors.white,
+  //                     ),
+  //                     backgroundColor: Colors.green,
+  //                   ),
+  //                   SizedBox(height: 15),
+  //                   Text(
+  //                     "Thanks! Your order was successfully placed.",
+  //                     textAlign: TextAlign.center,
+  //                   ),
+  //                   SizedBox(height: 10),
+  //                   RawMaterialButton(
+  //                     onPressed: () {
+  //                       Timer(Duration(seconds: 2), () {
+  //                         int count = 0;
+  //                         Navigator.popUntil(context, (route) {
+  //                           return count++ == 3;
+  //                         });
+  //                       });
+  //                     },
+  //                     disabledElevation: 0.0,
+  //                     splashColor: Colors.orange[50],
+  //                     shape: StadiumBorder(),
+  //                     elevation: 0.0,
+  //                     fillColor: Colors.orangeAccent,
+  //                     child: Padding(
+  //                       padding: const EdgeInsets.all(7.0),
+  //                       child: Text("Okay",
+  //                           style: TextStyle(
+  //                               fontSize: 18, fontWeight: FontWeight.bold)),
+  //                     ),
+  //                   ),
+  //                   SizedBox(
+  //                     height: 10,
+  //                   )
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         });
+  //   });
+  // }
+  //
+  // void _handlePaymentError(PaymentFailureResponse response) {
+  //   showDialog(
+  //       context: context,
+  //       builder: (context) {
+  //         return Dialog(
+  //           child: Container(
+  //             width: 200,
+  //             padding: EdgeInsets.all(20.0),
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children: [
+  //                 CircleAvatar(
+  //                   child: Icon(
+  //                     Icons.close,
+  //                     color: Colors.white,
+  //                   ),
+  //                   backgroundColor: Colors.red,
+  //                 ),
+  //                 SizedBox(height: 15),
+  //                 Text(
+  //                   "Sorry your payment was not successful.",
+  //                   textAlign: TextAlign.center,
+  //                 ),
+  //                 SizedBox(height: 10),
+  //                 RawMaterialButton(
+  //                   onPressed: () {
+  //                     Navigator.pop(context);
+  //                   },
+  //                   disabledElevation: 0.0,
+  //                   splashColor: Colors.orange[50],
+  //                   shape: StadiumBorder(),
+  //                   elevation: 0.0,
+  //                   fillColor: Colors.orangeAccent,
+  //                   child: Padding(
+  //                     padding: const EdgeInsets.all(7.0),
+  //                     child: Text("Okay",
+  //                         style: TextStyle(
+  //                             fontSize: 18, fontWeight: FontWeight.bold)),
+  //                   ),
+  //                 ),
+  //                 SizedBox(
+  //                   height: 10,
+  //                 )
+  //               ],
+  //             ),
+  //           ),
+  //         );
+  //       });
+  // }
+  //
+  // void _handleExternalWallet(ExternalWalletResponse response) {
+  //   // handle error and success and do the same as Success and Error
+  // }
 }
